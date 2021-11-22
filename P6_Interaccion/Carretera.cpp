@@ -268,7 +268,7 @@ void onTimer(int valor) {
 	anguloEstrella += velocidadEstrella * tiempo_transcurrido / 1000.0f;
 	anguloEsferaX += velocidadEsfera[0] * tiempo_transcurrido / 1000.0f;
 	anguloEsferaY += velocidadEsfera[1] * tiempo_transcurrido / 1000.0f;
-
+	//xd
 	glutTimerFunc(1000 / tasaFPS, onTimer, tasaFPS);
 	glutPostRedisplay();
 }
