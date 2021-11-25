@@ -99,6 +99,8 @@ void circuito() {
 		GLfloat v0[3] = { punto - (-d * n * l), 0.0 ,punto - (n * l) };
 		GLfloat v3[3] = { punto + (-d * n * l), 0.0 ,punto + (n * l) };
 
+
+		//V1 y V2 estan mal
 		GLfloat v1[3] = { punto - (-d * n * l) , 0.0 ,distancia + punto -( n * l) };
 		GLfloat v2[3] = { punto + (-d * n * l) , 0.0 ,distancia + punto + (n * l) };
 
