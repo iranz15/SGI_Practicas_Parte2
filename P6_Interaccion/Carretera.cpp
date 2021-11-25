@@ -34,7 +34,10 @@ static float velocidadEsfera[] = { 100.0, 60.0 };
 static float X = 0;
 static float Y = 1;
 static float Z = -10;
-
+static float amplitud = 10 ;
+static float periodo = 5 ;
+static int nQuads = 5;
+static int ancho = 10;
 
 
 static float girarX = 0;
@@ -43,10 +46,11 @@ static float girarZ = 0;
 static float ratioGiro = 0.25;
 static float angulo = 90.0; //Nuestro eje +Z hacia donde va la carretera. Inicialmente desde 0.0.0 la tangente forma 90 grados con +X.
 static float velocidad = 0.0;
-static int mirar  =  2;
+static int mirar  =  6;		//Constante para controlar la distancia entre la camara y el punto que esta mirando
 
 
-
+// GLfloat v0[3] = { -5,0,0 }, v1[3] = { -5,0,20 }, v2[3] = { 5,0,20 }, v3[3] = { 5,0,0 };
+GLfloat v0[3] = { 0,0,0 }, v1[3] = { 0,0,0}, v2[3] = { 0,0,0 }, v3[3] = { 0,0,0 };
 
 
 
@@ -61,9 +65,21 @@ void init()
 
 }
 
-float circuito(int amplitud, int periodo) {
+void circuito() {
 
-	return amplitud * sin(X * 2 * PI / periodo * 180 / PI);
+	float f = amplitud * sin(Z * 2 * PI / periodo * 180 / PI);
+	float d = (2 * PI * amplitud) /( periodo * cos( Z * 2*PI/ periodo));
+	float n = 1 /(sqrtf(1+pow(Z,2)) );
+	
+	float v0Z = Z - (-d*n) * ancho/2;
+	//float v0X = Z - (-d * n) * ancho / 2;
+		float n;
+	for (int i = 0; i < 5; i++) {
+	
+	
+	
+	
+	}
 	
 	//quads
 }
@@ -82,10 +98,12 @@ void display()
 	else 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	
-
+	//El seno y cosen dan los vectores unitarios
 	gluLookAt(X, Y, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, 1, 0);
 
-	GLfloat v0[3] = { -5,0,0 }, v1[3] = { -5,0,20 }, v2[3] = { 5,0,20 }, v3[3] = { 5,0,0 };
+
+	
+	//printf("%d",v2[0]);
 	glPolygonMode(GL_FRONT, GL_LINE);
 	quad(v0, v1, v2, v3, 10, 5);
 
@@ -134,11 +152,6 @@ void onTimer(int valor) {
 	Z += sin(angulo * PI / 180) * velocidad * tiempo_transcurrido / 1000.0f;
 	X += cos(angulo * PI / 180) * velocidad * tiempo_transcurrido / 1000.0f;
 	
-	
-
-	// anguloEstrella += velocidadEstrella * tiempo_transcurrido / 1000.0f;
-
-
 	stringstream titulo;
 	titulo << fixed;
 	titulo.precision(1); // De esta forma no aparecen errores de coma flotante en la ventana
