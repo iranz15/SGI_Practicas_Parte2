@@ -19,184 +19,36 @@
 
 
 static const int tasaFPS = 60;
+static enum { SOLIDO, ALAMBRICO } modoVisu;
 
-//Listas estrellas david
-static int id;
-static int estrella;
-static int estrellas;
-
-//Lista Marcador
-static int lMarcadores;
-
-//Listas para guardar agujas
-static int lHora;
-static int lMinuto;
-static int lSegundos;
-
-//Angulos de giro de agujas del reloj
-static float aConstante = 0.5; //60 minutos por 12 horas = 720  => 360/720=0.5
-static float aHora = 30; // 360/12 horas
-static float aMinuto = 6; // 360/60 mins/secs
-static float aSegundos = 6;
 
 //Constantes para guardar la hora actual del sistema
 static float tHora;
 static float tMinuto;
 static float tSegundos;
 
-//Angulo de giro estrella. Se declara para que sea dependiente de la velocidad de proceso del computador. Giro de 30 grados de base
-static float anguloEstrella;
-static float velocidadEstrella = 30.0;
 
-//Lo mismo para la esferas, primer componente velocidad de giro en x y segundo en y (grados por segundo)
-static float anguloEsferaX;
-static float anguloEsferaY;
 static float velocidadEsfera[] = { 100.0, 60.0 };
 
 //Inicializacion de la posicion de la camara
-static int camaraX = 0;
-static int camaraY = 0;
-static int camaraZ = 5;
-
-
-//Practica 2
-void estrella_basica() {
-
-	estrella = glGenLists(1);
-	glNewList(estrella, GL_COMPILE);
-	glBegin(GL_TRIANGLE_STRIP);
-	float rp = 0.7; //radio grande
-	float rg = 1.0;  //radio pequeño
-
-	//Se dibuja cada triangulo en sentido horario
-	//Sin y Cos estan en rad
-	//2 PI es la longitud de un circulo en rad, queremos los TRES vertices del triangulo
-	//Triangulo positivo
-	for (int i = 0; i < 4; i++) {
-		double angulo = i * 2 * PI / 3;
-		glVertex3f(rp * sin(angulo), rp * cos(angulo), 0.0);
-		glVertex3f(rg * sin(angulo), rg * cos(angulo), 0.0);
-	}
-	glEnd();
-
-	//Triangulo negativo
-	glBegin(GL_TRIANGLE_STRIP);
-	for (int i = 0; i < 4; i++) {
-		double angulo = i * 2 * PI / 3;
-		glVertex3f(-rp * sin(angulo), -rp * cos(angulo), 0.0);
-		glVertex3f(-rg * sin(angulo), -rg * cos(angulo), 0.0);
-	}
-	glEnd();
-	glEndList();
-}
-
-
-//Practica 4
-void estrella_compleja() {
-
-	for (int i = 0; i < 6; i++) {
-		glColor3f(0 + (i * 0.1), 0 + (i * 0.1), 0.3);
-		glPushMatrix();
-		glRotatef(30 * i, 0, 1, 0);
-		glCallList(estrella);
-		glPopMatrix();
-	}
-
-}
-
-void esfera(double colorR, double colorG, double colorB, int r, int sl, int st) {
-
-	glColor3f(colorR, colorG, colorB);
-	glutWireSphere(r, sl, st);
-
-}
-
-void agujas() {
-
-	//Aguja Hora
-	lHora = glGenLists(1);
-	glNewList(lHora, GL_COMPILE);
-	glBegin(GL_TRIANGLE_STRIP);
-	glVertex3f(-0.1, 0.0, -0.1);
-	glVertex3f(0.1, 0.0, -0.1);
-	glVertex3f(0.0, 0.5, -0.1);
-	glEnd();
-	glEndList();
+static float X = 0;
+static float Y = 1;
+static float Z = -10;
 
 
 
-	//Aguja Minuto
-	lMinuto = glGenLists(1);
-	glNewList(lMinuto, GL_COMPILE);
-	glBegin(GL_TRIANGLE_STRIP);
-	glVertex3f(-0.1, 0.0, -0.2);
-	glVertex3f(0.1, 0.0, -0.2);
-	glVertex3f(0.0, 1.0, -0.2);
-	glEnd();
-	glEndList();
+static float girarX = 0;
+static float girarZ = 0;
+
+static float ratioGiro = 0.25;
+static float angulo = 90.0; //Nuestro eje +Z hacia donde va la carretera. Inicialmente desde 0.0.0 la tangente forma 90 grados con +X.
+static float velocidad = 0.0;
+static int mirar  =  2;
 
 
 
-	//Aguja Segundos
-	lSegundos = glGenLists(1);
-	glNewList(lSegundos, GL_COMPILE);
-	glBegin(GL_TRIANGLE_STRIP);
-	glVertex3f(-0.05, 0.0, 0.0);
-	glVertex3f(0.05, 0.0, 0.0);
-	glVertex3f(0.0, 1.0, 0.0);
-	glEnd();
-	glEndList();
-}
-
-void marcadores() {
-
-	lMarcadores = glGenLists(1);
-	glNewList(lMarcadores, GL_COMPILE);
 
 
-	for (int i = 0; i < 60; i++) {
-		glBegin(GL_LINES);
-		//Marcador rojo mas grueso cada 5 minutos/1 hora
-		if (i % 5 == 0) {
-			glColor3f(1, 0.3, 0.3);
-			glLineWidth(5);
-		}
-		//Marcador azul mas fino de minutos (60 en una hora), segundos(60 en un minuto)  y periodos de 12 minutos (5 en cada hora)
-		else {
-			glColor3f(0.1, 1.0, 1);
-			glLineWidth(1);
-		}
-
-		double angulo = i * 2 * PI / 60;
-		glVertex3f(0.8 * sin(angulo), 0.8 * cos(angulo), 0.1);
-		glVertex3f(0.9 * sin(angulo), 0.9 * cos(angulo), 0.1);
-		glEnd();
-	}
-	glLineWidth(1);
-
-	glEndList();
-}
-
-void muestraFPS()
-// Calcula la frecuencia y la muestra en el título de la ventana 
-// cada segundo 
-{
-	int ahora, tiempo_transcurrido;
-	static int antes = 0;
-	static int FPS = 0;
-	stringstream titulo;
-
-	//Cuenta de llamadas a esta función en el último segundo 
-	FPS++;
-	ahora = glutGet(GLUT_ELAPSED_TIME);   //Tiempo transcurrido desde el inicio 
-	tiempo_transcurrido = ahora - antes;   //Tiempo transcurrido desde antes 
-	if (tiempo_transcurrido > 1000) {    //Acaba de rebasar el segundo 
-		titulo << "FPS: " << FPS;   //Se muestra una vez por segundo 
-		glutSetWindowTitle(titulo.str().c_str());
-		antes = ahora;     //Ahora ya es antes  
-		FPS = 0;      //Reset del conteo 
-	}
-}
 
 
 
@@ -209,22 +61,46 @@ void init()
 
 }
 
+float circuito(int amplitud, int periodo) {
+
+	return amplitud * sin(X * 2 * PI / periodo * 180 / PI);
+	
+	//quads
+}
+
+
 void display()
 {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(camaraX, camaraY, camaraZ, 0, 0, 0, 0, 1, 0); //Siempre mira al origen y la vertical es Y
 
+	if (modoVisu == ALAMBRICO) 
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	
+	else 
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	
 
-	muestraFPS();
+	gluLookAt(X, Y, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, 1, 0);
+
+	GLfloat v0[3] = { -5,0,0 }, v1[3] = { -5,0,20 }, v2[3] = { 5,0,20 }, v3[3] = { 5,0,0 };
+	glPolygonMode(GL_FRONT, GL_LINE);
+	quad(v0, v1, v2, v3, 10, 5);
+
+	ejes();
+	glColor3f(1, 0.3, 0.3);
+	glutSolidCone(0.4, 2, 30, 5);
+	//circuito();
+
+	
 
 	glutSwapBuffers();
 
 
 }
+
 
 
 void reshape(GLint w, GLint h)
@@ -233,19 +109,9 @@ void reshape(GLint w, GLint h)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	float razon = (float)w / h;
-
-	//Ahora la razon se ocupa correctamente de la isometria.
-
-	//Para que la esfera toque el extremo superior e inferior tenemos que hacer que el fov siempre este correcto cada vez que se hace reshape
-	//Sacamos la distancia entre la posicion de la camara al punto origen 
-	//Como es una piramide, la dividimos en dos y por trigonometria extraemos sin(a/2)=altura/distanciaOrig
-	//Sabemos que la altura es 1 porque es el tamaño que se pide del circulo.
-	//Extraemos el angulo alpha mediante la inversa (arcsin) y dejamos el resultado en grados
-
-	double distanciaOrig = sqrt(pow(camaraX, 2) + pow(camaraY, 2) + pow(camaraZ, 2));
-	double alpha = asin(1 / distanciaOrig) * 2 * (180 / PI);
-	gluPerspective(alpha, razon, 1, 15);
+	gluPerspective(45, razon, 1, 200);
 }
+
 
 
 #pragma warning(disable : 4996)
@@ -265,14 +131,70 @@ void onTimer(int valor) {
 	tHora = timeinfo->tm_hour;
 	tMinuto = timeinfo->tm_min;
 	tSegundos = timeinfo->tm_sec;
-	anguloEstrella += velocidadEstrella * tiempo_transcurrido / 1000.0f;
-	anguloEsferaX += velocidadEsfera[0] * tiempo_transcurrido / 1000.0f;
-	anguloEsferaY += velocidadEsfera[1] * tiempo_transcurrido / 1000.0f;
-	//xd
+	Z += sin(angulo * PI / 180) * velocidad * tiempo_transcurrido / 1000.0f;
+	X += cos(angulo * PI / 180) * velocidad * tiempo_transcurrido / 1000.0f;
+	
+	
+
+	// anguloEstrella += velocidadEstrella * tiempo_transcurrido / 1000.0f;
+
+
+	stringstream titulo;
+	titulo << fixed;
+	titulo.precision(1); // De esta forma no aparecen errores de coma flotante en la ventana
+	titulo << velocidad << "m/s"; 
+	glutSetWindowTitle(titulo.str().c_str());
+
 	glutTimerFunc(1000 / tasaFPS, onTimer, tasaFPS);
 	glutPostRedisplay();
 }
 
+void onKey(unsigned char tecla, int x, int y) { 
+
+	switch (tecla) {
+
+		case 'a':
+			modoVisu = ALAMBRICO;
+			break;
+		case 's':
+			modoVisu = SOLIDO;
+			break;
+		case 27:
+			exit(0);
+
+	}
+
+	glutPostRedisplay();
+}
+
+
+
+void onSpecialKey(int specialKey, int x, int y) { 
+
+	switch (specialKey) {
+		
+
+
+		case GLUT_KEY_UP:
+			velocidad += 0.1;
+			break;
+		case GLUT_KEY_DOWN:
+			if (velocidad <= 0.1) //Para evitar 
+				velocidad = 0;
+			else velocidad -= 0.1;
+			break;
+		case GLUT_KEY_LEFT:
+			angulo -= ratioGiro;
+			break;
+		case GLUT_KEY_RIGHT:
+			angulo += ratioGiro;
+			break;
+
+
+	}
+
+	glutPostRedisplay();
+}
 
 
 
@@ -283,9 +205,11 @@ void main(int argc, char** argv) {
 	glutInitWindowSize(1000, 1000);
 	glutCreateWindow(PROYECTO);
 	init();
-	std::cout << PROYECTO << " \nParametrizando el espacio-tiempo..." << std::endl;
+	std::cout << PROYECTO << " \nA conducir!" << std::endl;
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
+	glutKeyboardFunc(onKey);
+	glutSpecialFunc(onSpecialKey);
 	//glutIdleFunc(onIdle);
 	glutTimerFunc(1000 / tasaFPS, onTimer, tasaFPS);
 	glutMainLoop();
