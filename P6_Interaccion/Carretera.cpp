@@ -76,22 +76,22 @@ float normal(int d) {
 
 float derivada(int punto) {
 
-	return (2 * PI * amplitud) / (periodo * cos(punto * 2 * PI / periodo));
+	return (2 * PI * amplitud) / (periodo * cos( punto * 2 * PI / periodo));
 }
 
 
 void circuito() {
 
-	int N = 20;
+	int N = 50;
 
-	float v1[3] = { -ancho/2,0,distancia};
-	float v2[3] = { ancho / 2,0,distancia };
+	// float v1[3] = { -ancho/2,0,distancia};
+	// float v2[3] = { ancho / 2,0,distancia };
 
 	glColor3f(0.0, 0.0, 0.0);
 		
 	for (int i = 1; i <= N; i++) {
 
-		int punto = Z-3 + i - 1 * distancia;
+		int punto = Z + i - 1 * distancia;
 
 		float d = derivada(punto);
 		float n = normal(d);
