@@ -37,7 +37,7 @@ static float Z = -10;
 static float amplitud = 10;
 static float periodo = 30 ;
 static int nQuads = 200;
-static int ancho = 10;
+static int ancho = 30;
 
 
 static float girarX = 0;
@@ -96,13 +96,13 @@ void circuito() {
 		float d = derivada(punto);
 		float n = normal(d);
 
-		GLfloat v0[3] = { punto - (-d * n * l), 0.0 ,punto - (n * l) };
-		GLfloat v3[3] = { punto + (-d * n * l), 0.0 ,punto + (n * l) };
+		GLfloat v0[3] = { punto - (n * l), 0.0 , punto - (-d * n * l) };
+		GLfloat v3[3] = { punto + (n * l) , 0.0 , punto + (-d * n * l) };
 
 
 		//V1 y V2 estan mal
-		GLfloat v1[3] = { punto - (-d * n * l) , 0.0 ,distancia + punto -( n * l) };
-		GLfloat v2[3] = { punto + (-d * n * l) , 0.0 ,distancia + punto + (n * l) };
+		GLfloat v1[3] = { punto - (n * l), 0.0 , distancia + punto - (-d * n * l) };
+		GLfloat v2[3] = { punto + (n * l) , 0.0 , distancia + punto + (-d * n * l) };
 
 
 		glPolygonMode(GL_FRONT, GL_LINE);
