@@ -33,10 +33,10 @@ static float velocidadEsfera[] = { 100.0, 60.0 };
 //Inicializacion de la posicion de la camara
 static float X = 0;
 static float Y = 1;
-static float Z = 0;
+static float Z = -10;
 static float amplitud = 10;
-static float periodo = 50 ;
-static int nQuads = 50;
+static float periodo = 30 ;
+static int nQuads = 200;
 static int ancho = 10;
 
 
@@ -88,19 +88,19 @@ void circuito() {
 	// float v2[3] = { ancho / 2,0,distancia };
 
 	glColor3f(0.0, 0.0, 0.0);
-		
+	int l = ancho / 2;
 	for (int i = 1; i <= nQuads; i++) {
 
-		int punto = Z + i - 1 * distancia;
+		int punto = Z + (i - 1) * distancia;
 
 		float d = derivada(punto);
 		float n = normal(d);
 
-		GLfloat v0[3] = { punto - (-d * n) * ancho / 2, 0.0 ,punto - n * ancho / 2 };
-		GLfloat v3[3] = { punto + (-d * n) * ancho / 2, 0.0 ,punto + n * ancho / 2 };
+		GLfloat v0[3] = { punto - (-d * n * l), 0.0 ,punto - (n * l) };
+		GLfloat v3[3] = { punto + (-d * n * l), 0.0 ,punto + (n * l) };
 
-		GLfloat v1[3] = { punto - (-d * n) * ancho / 2, 0.0 ,distancia + punto - n * ancho / 2 };
-		GLfloat v2[3] = { punto + (-d * n) * ancho / 2, 0.0 ,distancia + punto + n * ancho / 2 };
+		GLfloat v1[3] = { punto - (-d * n * l) , 0.0 ,distancia + punto -( n * l) };
+		GLfloat v2[3] = { punto + (-d * n * l) , 0.0 ,distancia + punto + (n * l) };
 
 
 		glPolygonMode(GL_FRONT, GL_LINE);
