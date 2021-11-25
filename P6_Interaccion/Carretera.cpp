@@ -33,9 +33,9 @@ static float velocidadEsfera[] = { 100.0, 60.0 };
 //Inicializacion de la posicion de la camara
 static float X = 0;
 static float Y = 1;
-static float Z = -10;
-static float amplitud = 10 ;
-static float periodo = 5 ;
+static float Z = 0;
+static float amplitud = 4 ;
+static float periodo = 50 ;
 static int nQuads = 5;
 static int ancho = 10;
 
@@ -43,14 +43,14 @@ static int ancho = 10;
 static float girarX = 0;
 static float girarZ = 0;
 
-static float ratioGiro = 0.25;
+static float ratioGiro = 5;
 static float angulo = 90.0; //Nuestro eje +Z hacia donde va la carretera. Inicialmente desde 0.0.0 la tangente forma 90 grados con +X.
 static float velocidad = 0.0;
 static int mirar  =  6;		//Constante para controlar la distancia entre la camara y el punto que esta mirando
+int distancia = 10;
 
-
-// GLfloat v0[3] = { -5,0,0 }, v1[3] = { -5,0,20 }, v2[3] = { 5,0,20 }, v3[3] = { 5,0,0 };
-GLfloat v0[3] = { 0,0,0 }, v1[3] = { 0,0,0}, v2[3] = { 0,0,0 }, v3[3] = { 0,0,0 };
+//static GLfloat v0[3] = { -5,0,0 }, v1[3] = { -5,0,20 }, v2[3] = { 5,0,20 }, v3[3] = { 5,0,0 };
+//static float v0[3] = { 0,0,0 }, v1[3] = { 0,0,0}, v2[3] = { 0,0,0 }, v3[3] = { 0,0,0 };
 
 
 
@@ -65,19 +65,50 @@ void init()
 
 }
 
+
+
+float normal(int d) {
+
+	return  1 / (sqrtf(1 + pow(d, 2)));
+
+}
+
+
+float derivada(int punto) {
+
+	return (2 * PI * amplitud) / (periodo * cos(punto * 2 * PI / periodo));
+}
+
+
 void circuito() {
 
-	float f = amplitud * sin(Z * 2 * PI / periodo * 180 / PI);
-	float d = (2 * PI * amplitud) /( periodo * cos( Z * 2*PI/ periodo));
-	float n = 1 /(sqrtf(1+pow(Z,2)) );
+	int N = 20;
+
+	float v1[3] = { -ancho/2,0,distancia};
+	float v2[3] = { ancho / 2,0,distancia };
+
+	glColor3f(0.0, 0.0, 0.0);
+		
+	for (int i = 1; i <= N; i++) {
+
+		int punto = Z-3 + i - 1 * distancia;
+
+		float d = derivada(punto);
+		float n = normal(d);
+
+		float v0[3] = { punto - (-d * n) * ancho / 2, 0.0 ,punto - n * ancho / 2 };
+		float v3[3] = { punto + (-d * n) * ancho / 2, 0.0 ,punto + n * ancho / 2 };
+
+		float v1[3] = { punto - (-d * n) * ancho / 2, 0.0 ,distancia + punto - n * ancho / 2 };
+		float v2[3] = { punto + (-d * n) * ancho / 2, 0.0 ,distancia + punto + n * ancho / 2 };
+
+
+		glPolygonMode(GL_FRONT, GL_LINE);
+
+		quad(v0, v1, v2, v3, 5, 5);
 	
-	float v0Z = Z - (-d*n) * ancho/2;
-	//float v0X = Z - (-d * n) * ancho / 2;
-		float n;
-	for (int i = 0; i < 5; i++) {
-	
-	
-	
+
+
 	
 	}
 	
@@ -104,13 +135,13 @@ void display()
 
 	
 	//printf("%d",v2[0]);
-	glPolygonMode(GL_FRONT, GL_LINE);
-	quad(v0, v1, v2, v3, 10, 5);
+//	glPolygonMode(GL_FRONT, GL_LINE);
+	//quad(v0, v1, v2, v3, 10, 5);
 
 	ejes();
 	glColor3f(1, 0.3, 0.3);
 	glutSolidCone(0.4, 2, 30, 5);
-	//circuito();
+	circuito();
 
 	
 
