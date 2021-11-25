@@ -34,8 +34,8 @@ static float velocidadEsfera[] = { 100.0, 60.0 };
 static float X = 0;
 static float Y = 1;
 static float Z = -10;
-static float amplitud = 10;
-static float periodo = 30 ;
+static float amplitud = 4;
+static float periodo = 50 ;
 static int nQuads = 200;
 static int ancho = 30;
 
@@ -76,7 +76,7 @@ float normal(int d) {
 
 float derivada(int punto) {
 
-	return (2 * PI * amplitud) / (periodo * cos( punto * 2 * PI / periodo));
+	return( ( (2 * PI * amplitud) / periodo )* cos( punto * 2 * PI / periodo));
 }
 
 
@@ -107,7 +107,7 @@ void circuito() {
 
 		glPolygonMode(GL_FRONT, GL_LINE);
 
-		quad(v0, v1, v2, v3, 5, 5);
+		quad(v0, v1, v2, v3, 10, 5);
 	
 
 
