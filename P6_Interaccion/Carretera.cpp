@@ -91,7 +91,7 @@ void circuito() {
 	int l = ancho / 2;
 	for (int i = 1; i <= nQuads; i++) {
 
-		int punto = Z + (i - 1) * distancia;
+		int punto = Z-1 + (i - 1) * distancia;
 
 		float d = derivada(punto);
 		float n = normal(d);
