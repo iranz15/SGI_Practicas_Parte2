@@ -34,24 +34,31 @@ static float velocidadEsfera[] = { 100.0, 60.0 };
 static float X = 0;
 static float Y = 1;
 static float Z = -10;
+
+//Variables de generacion de la carretera
 static float amplitud = 4;
 static float periodo = 50 ;
 static int nQuads = 200;
-static int ancho = 30;
+static int ancho = 10;
+static int distancia = 10;
 
-
-static float girarX = 0;
-static float girarZ = 0;
-
+//Variables de control de camara
 static float ratioGiro = 5;
-static float angulo = 90.0; //Nuestro eje +Z hacia donde va la carretera. Inicialmente desde 0.0.0 la tangente forma 90 grados con +X.
+static float angulo = 90.0; //IMPORTANTE: Se genera la carretera hacia el eje +Z . Inicialmente desde 0.0.0 la tangente forma 90 grados con +X.
 static float velocidad = 0.0;
-static int mirar  =  6;		//Constante para controlar la distancia entre la camara y el punto que esta mirando
-int distancia = 10;
+static int mirar  =  6;		//Constante para controlar la distancia entre la camara y el punto que esta mirando. Se ha escogido de forma arbitraria
 
-//static GLfloat v0[3] = { -5,0,0 }, v1[3] = { -5,0,20 }, v2[3] = { 5,0,20 }, v3[3] = { 5,0,0 };
-//static float v0[3] = { 0,0,0 }, v1[3] = { 0,0,0}, v2[3] = { 0,0,0 }, v3[3] = { 0,0,0 };
 
+/*		Vista de pajaro
+		  Carretera
+				^ Z+
+			   (|
+				|)
+			   (|
+X+    <---------|-------->     -X
+
+
+*/
 
 
 
@@ -84,37 +91,32 @@ void circuito() {
 
 	
 
-	// float v1[3] = { -ancho/2,0,distancia};
-	// float v2[3] = { ancho / 2,0,distancia };
-
 	glColor3f(0.0, 0.0, 0.0);
 	int l = ancho / 2;
 	for (int i = 1; i <= nQuads; i++) {
 
-		int punto = Z-1 + (i - 1) * distancia;
+		int punto = Z + (i - 1) * distancia;
 
 		float d = derivada(punto);
 		float n = normal(d);
 
+		float d1 = derivada(punto + distancia);
+		float n1 = normal(d1);
+
 		GLfloat v0[3] = { punto - (n * l), 0.0 , punto - (-d * n * l) };
 		GLfloat v3[3] = { punto + (n * l) , 0.0 , punto + (-d * n * l) };
 
-
-		//V1 y V2 estan mal
-		GLfloat v1[3] = { punto - (n * l), 0.0 , distancia + punto - (-d * n * l) };
-		GLfloat v2[3] = { punto + (n * l) , 0.0 , distancia + punto + (-d * n * l) };
+		GLfloat v1[3] = { distancia + punto - (n1 * l), 0.0 , distancia + punto - (-d1 * n1 * l) };
+		GLfloat v2[3] = { distancia + punto + (n1 * l) , 0.0 , distancia + punto + (-d1 * n1 * l) };
 
 
 		glPolygonMode(GL_FRONT, GL_LINE);
 
 		quad(v0, v1, v2, v3, 10, 5);
-	
 
-
-	
 	}
 	
-	//quads
+	
 }
 
 
@@ -136,13 +138,10 @@ void display()
 
 
 	
-	//printf("%d",v2[0]);
-//	glPolygonMode(GL_FRONT, GL_LINE);
-	//quad(v0, v1, v2, v3, 10, 5);
 
 	ejes();
 	glColor3f(1, 0.3, 0.3);
-	glutSolidCone(0.4, 2, 30, 5);
+	//glutSolidCone(0.4, 2, 30, 5);
 	circuito();
 
 	
@@ -160,7 +159,7 @@ void reshape(GLint w, GLint h)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	float razon = (float)w / h;
-	gluPerspective(45, razon, 1, 200);
+	gluPerspective(45, razon, 1, 100);
 }
 
 
