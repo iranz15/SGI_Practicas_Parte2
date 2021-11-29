@@ -33,20 +33,23 @@ static float velocidadEsfera[] = { 100.0, 60.0 };
 //Inicializacion de la posicion de la camara
 static float X = 0;
 static float Y = 1;
-static float Z = -10;
+static float Z = -2;
 
 //Variables de generacion de la carretera
 static float amplitud = 4;
 static float periodo = 50 ;
-static int nQuads = 200;
-static int ancho = 10;
-static int distancia = 10;
+static int nQuads = 2;
+static int ancho = 4;
+static int distancia = 5;
 
 //Variables de control de camara
 static float ratioGiro = 5;
 static float angulo = 90.0; //IMPORTANTE: Se genera la carretera hacia el eje +Z . Inicialmente desde 0.0.0 la tangente forma 90 grados con +X.
 static float velocidad = 0.0;
-static int mirar  =  6;		//Constante para controlar la distancia entre la camara y el punto que esta mirando. Se ha escogido de forma arbitraria
+static int mirar  =  1;		//Constante para controlar la distancia entre la camara y el punto que esta mirando. Se ha escogido de forma arbitraria
+
+//Vista normal = 1/ Vista pajaro = 0
+static int vista = 1;
 
 
 /*		Vista de pajaro
@@ -74,9 +77,16 @@ void init()
 
 
 
-float normal(int d) {
+float funcionCarretera(int punto) {
 
-	return  1 / (sqrtf(1 + pow(d, 2)));
+	return amplitud* sin(punto * 2*PI / periodo);
+
+}
+
+
+float normal(float d) {
+
+	return  1 / (sqrtf(1 + powf(d, 2)));
 
 }
 
@@ -96,18 +106,21 @@ void circuito() {
 	for (int i = 1; i <= nQuads; i++) {
 
 		int punto = Z + (i - 1) * distancia;
+		int siguiente = punto+distancia;
 
+		float x = funcionCarretera(punto);
 		float d = derivada(punto);
 		float n = normal(d);
 
-		float d1 = derivada(punto + distancia);
+		float x1 = funcionCarretera(punto);
+		float d1 = derivada(siguiente);
 		float n1 = normal(d1);
 
-		GLfloat v0[3] = { punto - (n * l), 0.0 , punto - (-d * n * l) };
-		GLfloat v3[3] = { punto + (n * l) , 0.0 , punto + (-d * n * l) };
+		GLfloat v0[3] = { x - (n * l), 0.0 , punto - (-1 * d * n * l) };
+		GLfloat v3[3] = { x + (n * l) , 0.0 , punto + (-1 * d * n * l) };
 
-		GLfloat v1[3] = { distancia + punto - (n1 * l), 0.0 , distancia + punto - (-d1 * n1 * l) };
-		GLfloat v2[3] = { distancia + punto + (n1 * l) , 0.0 , distancia + punto + (-d1 * n1 * l) };
+		GLfloat v1[3] = { x1 - (n1 * l), 0.0 , siguiente - (-1 * d1 * n1 * l) };
+		GLfloat v2[3] = { x1 + (n1 * l) , 0.0 , siguiente + (-1 * d1 * n1 * l) };
 
 
 		glPolygonMode(GL_FRONT, GL_LINE);
@@ -133,9 +146,9 @@ void display()
 	else 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	
-	//El seno y cosen dan los vectores unitarios
-	gluLookAt(X, Y, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, 1, 0);
-
+	if (vista) gluLookAt(X, Y, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1-vista);
+	
+	else gluLookAt(X+20, Y+50, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
 
 	
 
@@ -203,6 +216,11 @@ void onKey(unsigned char tecla, int x, int y) {
 			break;
 		case 's':
 			modoVisu = SOLIDO;
+			break;
+		case 'c':
+			if (vista)
+			vista = 0;
+			else vista = 1;
 			break;
 		case 27:
 			exit(0);
