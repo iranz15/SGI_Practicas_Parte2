@@ -122,7 +122,7 @@ void circuito() {
 		GLfloat v1[3] = { x1 - (n1 * l), 0.0 , siguiente - (-1 * d1 * n1 * l) };
 		GLfloat v2[3] = { x1 + (n1 * l) , 0.0 , siguiente + (-1 * d1 * n1 * l) };
 
-
+		//Base
 		glPolygonMode(GL_FRONT, GL_LINE);
 
 		quad(v0, v1, v2, v3, 10, 5);
