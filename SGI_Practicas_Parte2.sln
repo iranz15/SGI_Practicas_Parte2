@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "P6_Interaccion", "P6_Interaccion\P6_Interaccion.vcxproj", "{D07ACA1E-18F0-4466-B824-7CA912F59433}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "P7_Iluminacion", "P7_Iluminacion\P7_Iluminacion.vcxproj", "{2A1A1A1D-AE28-49CC-AEDF-2CAB9F46F643}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{D07ACA1E-18F0-4466-B824-7CA912F59433}.Release|x64.Build.0 = Release|x64
 		{D07ACA1E-18F0-4466-B824-7CA912F59433}.Release|x86.ActiveCfg = Release|Win32
 		{D07ACA1E-18F0-4466-B824-7CA912F59433}.Release|x86.Build.0 = Release|Win32
+		{2A1A1A1D-AE28-49CC-AEDF-2CAB9F46F643}.Debug|x64.ActiveCfg = Debug|x64
+		{2A1A1A1D-AE28-49CC-AEDF-2CAB9F46F643}.Debug|x64.Build.0 = Debug|x64
+		{2A1A1A1D-AE28-49CC-AEDF-2CAB9F46F643}.Debug|x86.ActiveCfg = Debug|Win32
+		{2A1A1A1D-AE28-49CC-AEDF-2CAB9F46F643}.Debug|x86.Build.0 = Debug|Win32
+		{2A1A1A1D-AE28-49CC-AEDF-2CAB9F46F643}.Release|x64.ActiveCfg = Release|x64
+		{2A1A1A1D-AE28-49CC-AEDF-2CAB9F46F643}.Release|x64.Build.0 = Release|x64
+		{2A1A1A1D-AE28-49CC-AEDF-2CAB9F46F643}.Release|x86.ActiveCfg = Release|Win32
+		{2A1A1A1D-AE28-49CC-AEDF-2CAB9F46F643}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
