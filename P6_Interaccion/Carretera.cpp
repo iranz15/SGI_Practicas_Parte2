@@ -38,7 +38,7 @@ static float Z = -2;
 //Variables de generacion de la carretera
 static float amplitud = 4;
 static float periodo = 50 ;
-static int nQuads = 2;
+static int nQuads = 50;
 static int ancho = 4;
 static int distancia = 5;
 
@@ -112,7 +112,7 @@ void circuito() {
 		float d = derivada(punto);
 		float n = normal(d);
 
-		float x1 = funcionCarretera(punto);
+		float x1 = funcionCarretera(siguiente);
 		float d1 = derivada(siguiente);
 		float n1 = normal(d1);
 
