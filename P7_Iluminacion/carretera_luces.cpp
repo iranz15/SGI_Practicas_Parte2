@@ -154,14 +154,14 @@ void luces(){
 		GLfloat focoA[] = { 0.2, 0.2, 0.2, 1.0 };
 		GLfloat focoD[] = { 1.00, 1.00, 1.00, 1.0 };
 		GLfloat focoS[] = { 0.3, 0.3, 0.3, 1.0 };
-		GLfloat focoM[] = { 0.0, 0.0, 1.0 };  // Direccion del foco la de la vista 
+		GLfloat focoM[] = { 0.0, 0.0, 1.0 };  // Direccion focal de la vista 
 
 		glLightfv(GL_LIGHT1, GL_POSITION, focoP);
 		glLightfv(GL_LIGHT1, GL_AMBIENT, focoA);
 		glLightfv(GL_LIGHT1, GL_DIFFUSE, focoD);
 		glLightfv(GL_LIGHT1, GL_SPECULAR, focoS);
 		glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 25.0);
-		glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 10.0);
+		glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 20.0);
 		glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, focoM);
 		glEnable(GL_LIGHT1);
 
