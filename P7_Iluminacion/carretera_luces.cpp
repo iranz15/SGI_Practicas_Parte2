@@ -136,11 +136,45 @@ void circuito() {
 
 void luces(){
 
+	//Cheatsheet luces: https://i.gyazo.com/08d9da01d2b54086b40d41097cb25e75.png
 
+	if (noche) {
 
+		GLfloat lunaP[] = { 0.0, 10.0, 0.0, 0.0 };
+		GLfloat lunaA[] = { 0.05, 0.05, 0.05, 1.0 };
+		GLfloat lunaD[] = { 0.05, 0.05, 0.05, 1.0 };
+		GLfloat lunaS[] = { 0.0, 0.0, 0.0, 1.0 };
+		glLightfv(GL_LIGHT0, GL_POSITION, lunaP);
+		glLightfv(GL_LIGHT0, GL_AMBIENT, lunaA);
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, lunaD);
+		glLightfv(GL_LIGHT0, GL_SPECULAR, lunaS);
+		glEnable(GL_LIGHT0);
 
+		GLfloat focoP[] = { 0, 1.0, 0, 1.0 };
+		GLfloat focoA[] = { 0.2, 0.2, 0.2, 1.0 };
+		GLfloat focoD[] = { 1.00, 1.00, 1.00, 1.0 };
+		GLfloat focoS[] = { 0.3, 0.3, 0.3, 1.0 };
+		GLfloat focoM[] = { 0.0, 0.0, 1.0 };  // Direccion del foco la de la vista 
 
+		glLightfv(GL_LIGHT1, GL_POSITION, focoP);
+		glLightfv(GL_LIGHT1, GL_AMBIENT, focoA);
+		glLightfv(GL_LIGHT1, GL_DIFFUSE, focoD);
+		glLightfv(GL_LIGHT1, GL_SPECULAR, focoS);
+		glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 25.0);
+		glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 10.0);
+		glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, focoM);
+		glEnable(GL_LIGHT1);
 
+		glEnable(GL_LIGHTING);
+
+	}
+	else {
+	
+		glDisable(GL_LIGHT0);
+		glDisable(GL_LIGHT1);
+		glDisable(GL_LIGHTING);
+
+	}
 }
 void display()
 {
@@ -149,9 +183,11 @@ void display()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	if (noche) glClearColor(0.0, 0.0, 0.0, 0.0); //Fondo negro
-	else glClearColor(1.0, 1.0, 1.0, 1.0);		//Fondo blanco
-	
+	if (noche) glClearColor(0.0, 0.0, 0.0, 1.0); //Fondo negro
+	else glClearColor(1.0, 1.0, 1.0, 1.0);		//Fondo negro
+
+	luces();
+
 	if (modoVisu == ALAMBRICO)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -167,7 +203,7 @@ void display()
 	ejes();
 	
 	//glutSolidCone(0.4, 2, 30, 5);
-	luces();
+	
 	circuito();
 
 
