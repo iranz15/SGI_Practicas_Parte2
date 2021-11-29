@@ -33,7 +33,7 @@ static float velocidadEsfera[] = { 100.0, 60.0 };
 //Inicializacion de la posicion de la camara
 static float X = 0;
 static float Y = 1;
-static float Z = -2;
+static float Z = -10;
 
 //Variables de generacion de la carretera
 static float amplitud = 4;
@@ -76,6 +76,7 @@ void init()
 	 // Fondo Blanco
 
 	glEnable(GL_DEPTH_TEST);		//Test de profundidad
+	glEnable(GL_NORMALIZE);			//Normalizacion vectores iluminacion
 
 }
 
@@ -104,8 +105,24 @@ float derivada(int punto) {
 void circuito() {
 
 
+	if (noche) {
 
-	glColor3f(0, 0.3, 0.3);
+		//Emisivo por defecto
+		//Ambiental por defecto
+		glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
+		glEnable(GL_COLOR_MATERIAL);
+
+		GLfloat cD[] = { 0.5,0.7,0.6,1.0 };
+		GLfloat cS[] = { 0.3,0.3,0.3,1.0 };
+		GLfloat s = 3.0;
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, cD);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, cS);
+		glMaterialf(GL_FRONT, GL_SHININESS, s);
+
+		glColor3f(0, 0, 0);
+
+	}
+	else { glColor3f(0, 0, 0); }
 	int l = ancho / 2;
 	for (int i = 1; i <= nQuads; i++) {
 
@@ -165,6 +182,38 @@ void luces(){
 		glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, focoM);
 		glEnable(GL_LIGHT1);
 
+		/*
+		GLfloat f1P[] = { 0.0, 4.0, 0.0, 1.0 };
+		//Ambiental 0 por defecto
+		GLfloat f1D[] = { 0.5, 0.5, 0.2, 1.0 };
+		//Ambiental 0 por defecto
+		GLfloat f1M[] = { 0.0, -1.0, 0.0};
+		glLightfv(GL_LIGHT2, GL_POSITION, f1P);
+		glLightfv(GL_LIGHT2, GL_DIFFUSE, f1D);
+		glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, f1M);
+		glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, 45.0);
+		glLightf(GL_LIGHT2, GL_SPOT_EXPONENT, 10.0);
+		glEnable(GL_LIGHT2);
+		*/
+		for (int i = 1; i <= 4;i++) {
+		GLenum GL_LIGHTi = GL_LIGHT0 + i;
+
+		//Poscion depende del circuito, no la camara
+		GLfloat f1P[] = { X, 4.0, Z*(i*10), 1.0 };
+		//Ambiental 0 por defecto
+		GLfloat f1D[] = { 0.5, 0.5, 0.2, 1.0 };
+		//Ambiental 0 por defecto
+		GLfloat f1M[] = { 0.0, -1.0, 0.0 };
+		
+		glLightfv(GL_LIGHTi, GL_POSITION, f1P);
+		glLightfv(GL_LIGHTi, GL_DIFFUSE, f1D);
+		glLightfv(GL_LIGHTi, GL_SPOT_DIRECTION, f1M);
+		glLightf(GL_LIGHTi, GL_SPOT_CUTOFF, 45.0);
+		glLightf(GL_LIGHTi, GL_SPOT_EXPONENT, 10.0);
+		glEnable(GL_LIGHTi);
+		
+		}
+
 		glEnable(GL_LIGHTING);
 
 	}
@@ -172,6 +221,7 @@ void luces(){
 	
 		glDisable(GL_LIGHT0);
 		glDisable(GL_LIGHT1);
+		glDisable(GL_LIGHT2);
 		glDisable(GL_LIGHTING);
 
 	}
@@ -196,7 +246,7 @@ void display()
 
 	if (vista) gluLookAt(X, Y, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
 
-	else gluLookAt(X + 20, Y + 50, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
+	else gluLookAt(X, Y + 50, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
 
 
 
