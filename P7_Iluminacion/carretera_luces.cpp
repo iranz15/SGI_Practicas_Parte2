@@ -167,7 +167,7 @@ void luces(){
 		glLightfv(GL_LIGHT0, GL_SPECULAR, lunaS);
 		glEnable(GL_LIGHT0);
 
-		GLfloat focoP[] = { 0, 1.0, 0, 1.0 };
+		GLfloat focoP[] = { 0, Y, 0, 1.0 };
 		GLfloat focoA[] = { 0.2, 0.2, 0.2, 1.0 };
 		GLfloat focoD[] = { 1.00, 1.00, 1.00, 1.0 };
 		GLfloat focoS[] = { 0.3, 0.3, 0.3, 1.0 };
@@ -182,24 +182,12 @@ void luces(){
 		glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, focoM);
 		glEnable(GL_LIGHT1);
 
-		/*
-		GLfloat f1P[] = { 0.0, 4.0, 0.0, 1.0 };
-		//Ambiental 0 por defecto
-		GLfloat f1D[] = { 0.5, 0.5, 0.2, 1.0 };
-		//Ambiental 0 por defecto
-		GLfloat f1M[] = { 0.0, -1.0, 0.0};
-		glLightfv(GL_LIGHT2, GL_POSITION, f1P);
-		glLightfv(GL_LIGHT2, GL_DIFFUSE, f1D);
-		glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, f1M);
-		glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, 45.0);
-		glLightf(GL_LIGHT2, GL_SPOT_EXPONENT, 10.0);
-		glEnable(GL_LIGHT2);
-		*/
-		for (int i = 1; i <= 4;i++) {
+	
+		for (int i = 2; i <= 5;i++) {
 		GLenum GL_LIGHTi = GL_LIGHT0 + i;
 
 		//Poscion depende del circuito, no la camara
-		GLfloat f1P[] = { X, 4.0, Z*(i*10), 1.0 };
+		GLfloat f1P[] = { X, 4.0, Z+(i*10), 1.0 };
 		//Ambiental 0 por defecto
 		GLfloat f1D[] = { 0.5, 0.5, 0.2, 1.0 };
 		//Ambiental 0 por defecto
@@ -221,7 +209,10 @@ void luces(){
 	
 		glDisable(GL_LIGHT0);
 		glDisable(GL_LIGHT1);
-		glDisable(GL_LIGHT2);
+		for (int i = 2; i <= 5; i++) {
+			GLenum GL_LIGHTi = GL_LIGHT0 + i;
+			glDisable(GL_LIGHTi);
+		}
 		glDisable(GL_LIGHTING);
 
 	}
@@ -249,14 +240,8 @@ void display()
 	else gluLookAt(X, Y + 50, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
 
 
-
 	ejes();
-	
-	//glutSolidCone(0.4, 2, 30, 5);
-	
 	circuito();
-
-
 
 	glutSwapBuffers();
 
