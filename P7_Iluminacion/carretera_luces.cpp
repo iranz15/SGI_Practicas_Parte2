@@ -33,7 +33,7 @@ static float velocidadEsfera[] = { 100.0, 60.0 };
 //Inicializacion de la posicion de la camara
 static float X = 0;
 static float Y = 1;
-static float Z = -10;
+static float Z = 0;
 
 //Variables de generacion de la carretera
 static float amplitud = 4;
@@ -200,7 +200,7 @@ void luces() {
 		glLightfv(GL_LIGHT0, GL_SPECULAR, lunaS);
 		glEnable(GL_LIGHT0);
 
-		//TODO Ahora mismo no esta mal porque no se generan en el sigueinte perido hasta que estas en el siguiente
+		//TODO Ahora mismo esta mal porque no se generan en el sigueinte perido hasta que estas en el siguiente (tiene sentido que ocurra esto con el codigo escrito)
 		for (int i = 2; i <= 5; i++) {
 			GLenum GL_LIGHTi = GL_LIGHT0 + i;
 
@@ -208,9 +208,12 @@ void luces() {
 			Ponemos las farolas equitativamente respecto la funcion 
 			Sacamos el inicio del periodo en cada momento
 			*/
-			int inicioPeriodo = Z - ((int)Z % (int)periodo);
-			int distanciaFarolas = (periodo / 4) * (i - 2);
-			GLfloat lP[] = { funcionCarretera(inicioPeriodo + distanciaFarolas), 4.0, inicioPeriodo + distanciaFarolas, 1.0 };
+			float detras = 0;
+			float inicioPeriodo = Z - remainder(Z,periodo);
+			float distanciaFarolas = (periodo / 4) * (i - 2);
+			if (Z < inicioPeriodo) { detras = 1; }			//Si esa por detras, la generamos por delante
+
+			GLfloat lP[] = { funcionCarretera(inicioPeriodo + distanciaFarolas + (periodo*detras) ), 4.0, inicioPeriodo + distanciaFarolas + (periodo * detras), 1.0 };
 			//Ambiental 0 por defecto
 			GLfloat lD[] = { 0.5, 0.5, 0.2, 1.0 };
 			//Ambiental 0 por defecto
@@ -249,7 +252,7 @@ void display()
 
 	if (noche) glClearColor(0.0, 0.0, 0.0, 1.0); //Fondo negro
 	else glClearColor(1.0, 1.0, 1.0, 1.0);		//Fondo negro
-	luzfoco();
+	//luzfoco();
 	
 
 	if (modoVisu == ALAMBRICO)
@@ -262,9 +265,10 @@ void display()
 
 	else gluLookAt(X, Y + 50, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
 
-	luces();
+	
 	ejes();
 	circuito();
+	luces();
 
 	glutSwapBuffers();
 
