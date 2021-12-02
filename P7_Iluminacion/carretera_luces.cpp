@@ -144,7 +144,7 @@ void circuito() {
 		GLfloat v2[3] = { x1 + (n1 * l) , 0.0 , siguiente + (-1 * d1 * n1 * l) };
 
 		
-		if (i < nQuads / 2) quad(v0, v1, v2, v3, 10, 10);
+		if (i < nQuads ) quad(v0, v1, v2, v3, 10, 10);
 		else quad(v0, v1, v2, v3, 1, 1);
 
 	}
@@ -200,12 +200,17 @@ void luces() {
 		glLightfv(GL_LIGHT0, GL_SPECULAR, lunaS);
 		glEnable(GL_LIGHT0);
 
-
+		//TODO Ahora mismo no esta mal porque no se generan en el sigueinte perido hasta que estas en el siguiente
 		for (int i = 2; i <= 5; i++) {
 			GLenum GL_LIGHTi = GL_LIGHT0 + i;
 
-			//Poscion depende del circuito, no la camara
-			GLfloat lP[] = { funcionCarretera(Z * i), 4.0, Z * i, 1.0 };
+			/*Posicion depende del circuito
+			Ponemos las farolas equitativamente respecto la funcion 
+			Sacamos el inicio del periodo en cada momento
+			*/
+			int inicioPeriodo = Z - ((int)Z % (int)periodo);
+			int distanciaFarolas = (periodo / 4) * (i - 2);
+			GLfloat lP[] = { funcionCarretera(inicioPeriodo + distanciaFarolas), 4.0, inicioPeriodo + distanciaFarolas, 1.0 };
 			//Ambiental 0 por defecto
 			GLfloat lD[] = { 0.5, 0.5, 0.2, 1.0 };
 			//Ambiental 0 por defecto
