@@ -36,7 +36,7 @@ static float Y = 1;
 static float Z = 0;
 
 //Variables de generacion de la carretera
-static float amplitud = 4;
+static float amplitud = 8;
 static float periodo = 50;
 static int nQuads = 50;
 static int ancho = 4;
@@ -210,8 +210,8 @@ void luces() {
 			*/
 			float detras = 0;
 			float inicioPeriodo = Z - remainder(Z,periodo);
-			float distanciaFarolas = (periodo / 4) * (i - 2);
-			if (Z < inicioPeriodo) { detras = 1; }			//Si esa por detras, la generamos por delante
+			float distanciaFarolas = (periodo / 4) * ((float)i - 2);
+			if (inicioPeriodo+ distanciaFarolas < Z) { detras = 1; }			//Si detras de la camara, generamos en el siguiente periodo
 
 			GLfloat lP[] = { funcionCarretera(inicioPeriodo + distanciaFarolas + (periodo*detras) ), 4.0, inicioPeriodo + distanciaFarolas + (periodo * detras), 1.0 };
 			//Ambiental 0 por defecto
