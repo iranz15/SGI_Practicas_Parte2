@@ -163,7 +163,7 @@ void luzfoco() {
 		GLfloat focoA[] = { 0.2, 0.2, 0.2, 1.0 };
 		GLfloat focoD[] = { 1.00, 1.00, 1.00, 1.0 };
 		GLfloat focoS[] = { 0.3, 0.3, 0.3, 1.0 };
-		GLfloat focoM[] = { 0.0, -0.5, 1.0};  // Esto esta mal???? Preguntar al profesor
+		GLfloat focoM[] = { 0.0, -0.5, -1.0};  // Esto esta mal???? Preguntar al profesor
 
 		
 		glLightfv(GL_LIGHT1, GL_AMBIENT, focoA);
