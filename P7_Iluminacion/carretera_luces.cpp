@@ -78,6 +78,7 @@ void init()
 	glEnable(GL_DEPTH_TEST);		//Test de profundidad
 	glEnable(GL_NORMALIZE);			//Normalizacion vectores iluminacion
 
+
 }
 
 
@@ -119,7 +120,7 @@ void circuito() {
 		glMaterialfv(GL_FRONT, GL_SPECULAR, cS);
 		glMaterialf(GL_FRONT, GL_SHININESS, s);
 
-		glColor3f(0.3, 0.3, 0.3);
+		glColor3f(0.7, 0.7, 0.7);
 
 	}
 	else { glColor3f(0, 0, 0); }
@@ -159,7 +160,7 @@ void luzfoco() {
 	if (noche) {
 
 
-		GLfloat focoP[] = { 0, -30, 4, 1.0 };
+		GLfloat focoP[] = { 0, -0.3, 0, 1.0 };
 		GLfloat focoA[] = { 0.2, 0.2, 0.2, 1.0 };
 		GLfloat focoD[] = { 1.00, 1.00, 1.00, 1.0 };
 		GLfloat focoS[] = { 0.3, 0.3, 0.3, 1.0 };
@@ -172,8 +173,8 @@ void luzfoco() {
 		glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 25.0);
 		glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 20.0);
 		glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, focoM);
-		glEnable(GL_LIGHT1);
 
+		glEnable(GL_LIGHT1);
 		glEnable(GL_LIGHTING);
 
 	}
@@ -200,21 +201,18 @@ void luces() {
 		glLightfv(GL_LIGHT0, GL_SPECULAR, lunaS);
 		glEnable(GL_LIGHT0);
 
-		//TODO Ahora mismo esta mal porque no se generan en el sigueinte perido hasta que estas en el siguiente (tiene sentido que ocurra esto con el codigo escrito)
 		for (int i = 2; i <= 5; i++) {
 			GLenum GL_LIGHTi = GL_LIGHT0 + i;
 
 			/*Posicion depende del circuito
 			Ponemos las farolas equitativamente respecto la funcion 
-			Sacamos el inicio del periodo en cada momento
 			*/
 			float detras = 0;
 			float inicioPeriodo = (int)Z - (int)Z % (int)periodo;		 // Casting para poder sacar bien el inico del periodo
 			float distanciaFarolas = (periodo / 4.f) * ((float)i - 2.f);
 
 			//if (i == 5) { printf("%.6f\n", distanciaFarolas );  }
-			printf("%.2f\n", inicioPeriodo);
-			if (inicioPeriodo + distanciaFarolas < Z) { detras = 1; }			//Si detras de la camara, generamos en el siguiente periodo
+			if (inicioPeriodo + distanciaFarolas < Z) { detras = 1; }			//Si detras de la camara, generamos en el siguiente periodo y no se genera detras
 			GLfloat lP[] = { funcionCarretera(inicioPeriodo + distanciaFarolas + (periodo * detras) ), 4.0, inicioPeriodo + distanciaFarolas + (periodo * detras), 1.0 };
 			//Ambiental 0 por defecto
 			GLfloat lD[] = { 0.5, 0.5, 0.2, 1.0 };
@@ -253,8 +251,8 @@ void display()
 	glLoadIdentity();
 
 	if (noche) glClearColor(0.0, 0.0, 0.0, 1.0); //Fondo negro
-	else glClearColor(1.0, 1.0, 1.0, 1.0);		//Fondo negro
-	//luzfoco();
+	else glClearColor(1.0, 1.0, 1.0, 1.0);		//Fondo blanco
+	luzfoco();
 	
 
 	if (modoVisu == ALAMBRICO)
@@ -263,11 +261,11 @@ void display()
 	else
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+	//Preguntar si esto le parece bien en vez de hacer rotate
+
 	if (vista) gluLookAt(X, Y, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
 
 	else gluLookAt(X, Y + 50, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
-
-	
 	ejes();
 	circuito();
 	luces();
