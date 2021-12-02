@@ -20,7 +20,7 @@
 
 static const int tasaFPS = 60;
 static enum { SOLIDO, ALAMBRICO } modoVisu;
-
+static float coef[16];    // Matriz MODELVIEW
 
 //Constantes para guardar la hora actual del sistema
 static float tHora;
@@ -159,18 +159,20 @@ void luzfoco() {
 	if (noche) {
 
 
-		GLfloat focoP[] = { 0, -0.3, 0, 1.0 };
+		GLfloat focoP[] = { 0, 0.7, 0, 1.0 };
 		GLfloat focoA[] = { 0.2, 0.2, 0.2, 1.0 };
 		GLfloat focoD[] = { 1.00, 1.00, 1.00, 1.0 };
 		GLfloat focoS[] = { 0.3, 0.3, 0.3, 1.0 };
-		GLfloat focoM[] = { 0.0, 0.0, 1.0 };  // Direccion focal de la vista 
+		GLfloat focoM[] = { 0.0, -0.5, -0.6};  // Esto esta mal???? Preguntar al profesor
 
-		glLightfv(GL_LIGHT1, GL_POSITION, focoP);
+		
 		glLightfv(GL_LIGHT1, GL_AMBIENT, focoA);
 		glLightfv(GL_LIGHT1, GL_DIFFUSE, focoD);
 		glLightfv(GL_LIGHT1, GL_SPECULAR, focoS);
 		glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 25.0);
 		glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 20.0);
+
+		glLightfv(GL_LIGHT1, GL_POSITION, focoP);
 		glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, focoM);
 
 		glEnable(GL_LIGHT1);
@@ -254,17 +256,23 @@ void display()
 	luzfoco();
 	
 
+	/*
+	glRotatef(angulo, 0, 1, 0); 
+	glMultMatrixf(coef);
+	glGetFloatv(GL_MODELVIEW_MATRIX, coef);
+	glLoadIdentity();
+	gluLookAt(X, Y, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
+	glMultMatrixf(coef); 
+	*/
+	if (vista) gluLookAt(X, Y, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
+	else gluLookAt(X, Y + 50, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
+	
 	if (modoVisu == ALAMBRICO)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	else
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	//Preguntar si esto le parece bien en vez de hacer rotate
-
-	if (vista) gluLookAt(X, Y, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
-
-	else gluLookAt(X, Y + 50, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
 	ejes();
 	circuito();
 	luces();
@@ -310,9 +318,8 @@ void onTimer(int valor) {
 	stringstream titulo;
 	titulo << fixed;
 	titulo.precision(1); // De esta forma no aparecen errores de coma flotante en la ventana
-	//titulo << velocidad << "m/s";
-	//glutSetWindowTitle(titulo.str().c_str());
-	titulo << Z << "metros";
+	titulo << velocidad << "m/s";
+	glutSetWindowTitle(titulo.str().c_str());
 	glutSetWindowTitle(titulo.str().c_str());
 
 	glutTimerFunc(1000 / tasaFPS, onTimer, tasaFPS);
