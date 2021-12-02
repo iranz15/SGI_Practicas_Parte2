@@ -119,7 +119,7 @@ void circuito() {
 		glMaterialfv(GL_FRONT, GL_SPECULAR, cS);
 		glMaterialf(GL_FRONT, GL_SHININESS, s);
 
-		glColor3f(0, 0, 0);
+		glColor3f(0.3, 0.3, 0.3);
 
 	}
 	else { glColor3f(0, 0, 0); }
@@ -144,14 +144,47 @@ void circuito() {
 		GLfloat v2[3] = { x1 + (n1 * l) , 0.0 , siguiente + (-1 * d1 * n1 * l) };
 
 		
-		quad(v0, v1, v2, v3, 10, 5);
+		if (i < nQuads / 2) quad(v0, v1, v2, v3, 10, 10);
+		else quad(v0, v1, v2, v3, 1, 1);
 
 	}
 
 
 }
 
-void luces(){
+void luzfoco() {
+
+	//Cheatsheet luces: https://i.gyazo.com/08d9da01d2b54086b40d41097cb25e75.png
+
+	if (noche) {
+
+
+		GLfloat focoP[] = { 0, -30, 4, 1.0 };
+		GLfloat focoA[] = { 0.2, 0.2, 0.2, 1.0 };
+		GLfloat focoD[] = { 1.00, 1.00, 1.00, 1.0 };
+		GLfloat focoS[] = { 0.3, 0.3, 0.3, 1.0 };
+		GLfloat focoM[] = { 0.0, 0.0, 1.0 };  // Direccion focal de la vista 
+
+		glLightfv(GL_LIGHT1, GL_POSITION, focoP);
+		glLightfv(GL_LIGHT1, GL_AMBIENT, focoA);
+		glLightfv(GL_LIGHT1, GL_DIFFUSE, focoD);
+		glLightfv(GL_LIGHT1, GL_SPECULAR, focoS);
+		glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 25.0);
+		glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 20.0);
+		glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, focoM);
+		glEnable(GL_LIGHT1);
+
+		glEnable(GL_LIGHTING);
+
+	}
+	else {
+		glDisable(GL_LIGHT1);
+		glDisable(GL_LIGHTING);
+	}
+}
+
+
+void luces() {
 
 	//Cheatsheet luces: https://i.gyazo.com/08d9da01d2b54086b40d41097cb25e75.png
 
@@ -167,48 +200,32 @@ void luces(){
 		glLightfv(GL_LIGHT0, GL_SPECULAR, lunaS);
 		glEnable(GL_LIGHT0);
 
-		GLfloat focoP[] = { 0, Y, 0, 1.0 };
-		GLfloat focoA[] = { 0.2, 0.2, 0.2, 1.0 };
-		GLfloat focoD[] = { 1.00, 1.00, 1.00, 1.0 };
-		GLfloat focoS[] = { 0.3, 0.3, 0.3, 1.0 };
-		GLfloat focoM[] = { 0.0, 0.0, 1.0 };  // Direccion focal de la vista 
 
-		glLightfv(GL_LIGHT1, GL_POSITION, focoP);
-		glLightfv(GL_LIGHT1, GL_AMBIENT, focoA);
-		glLightfv(GL_LIGHT1, GL_DIFFUSE, focoD);
-		glLightfv(GL_LIGHT1, GL_SPECULAR, focoS);
-		glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 25.0);
-		glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 20.0);
-		glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, focoM);
-		glEnable(GL_LIGHT1);
+		for (int i = 2; i <= 5; i++) {
+			GLenum GL_LIGHTi = GL_LIGHT0 + i;
 
-	
-		for (int i = 2; i <= 5;i++) {
-		GLenum GL_LIGHTi = GL_LIGHT0 + i;
+			//Poscion depende del circuito, no la camara
+			GLfloat lP[] = { funcionCarretera(Z * i), 4.0, Z * i, 1.0 };
+			//Ambiental 0 por defecto
+			GLfloat lD[] = { 0.5, 0.5, 0.2, 1.0 };
+			//Ambiental 0 por defecto
+			GLfloat lM[] = { 0.0, -1.0, 0.0 };
 
-		//Poscion depende del circuito, no la camara
-		GLfloat f1P[] = { X, 4.0, Z+(i*10), 1.0 };
-		//Ambiental 0 por defecto
-		GLfloat f1D[] = { 0.5, 0.5, 0.2, 1.0 };
-		//Ambiental 0 por defecto
-		GLfloat f1M[] = { 0.0, -1.0, 0.0 };
-		
-		glLightfv(GL_LIGHTi, GL_POSITION, f1P);
-		glLightfv(GL_LIGHTi, GL_DIFFUSE, f1D);
-		glLightfv(GL_LIGHTi, GL_SPOT_DIRECTION, f1M);
-		glLightf(GL_LIGHTi, GL_SPOT_CUTOFF, 45.0);
-		glLightf(GL_LIGHTi, GL_SPOT_EXPONENT, 10.0);
-		glEnable(GL_LIGHTi);
-		
+			glLightfv(GL_LIGHTi, GL_POSITION, lP);
+			glLightfv(GL_LIGHTi, GL_DIFFUSE, lD);
+			glLightfv(GL_LIGHTi, GL_SPOT_DIRECTION, lM);
+			glLightf(GL_LIGHTi, GL_SPOT_CUTOFF, 45.0);
+			glLightf(GL_LIGHTi, GL_SPOT_EXPONENT, 10.0);
+			glEnable(GL_LIGHTi);
+
 		}
 
 		glEnable(GL_LIGHTING);
 
 	}
 	else {
-	
+
 		glDisable(GL_LIGHT0);
-		glDisable(GL_LIGHT1);
 		for (int i = 2; i <= 5; i++) {
 			GLenum GL_LIGHTi = GL_LIGHT0 + i;
 			glDisable(GL_LIGHTi);
@@ -217,6 +234,7 @@ void luces(){
 
 	}
 }
+
 void display()
 {
 
@@ -226,8 +244,8 @@ void display()
 
 	if (noche) glClearColor(0.0, 0.0, 0.0, 1.0); //Fondo negro
 	else glClearColor(1.0, 1.0, 1.0, 1.0);		//Fondo negro
-
-	luces();
+	luzfoco();
+	
 
 	if (modoVisu == ALAMBRICO)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -239,7 +257,7 @@ void display()
 
 	else gluLookAt(X, Y + 50, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
 
-
+	luces();
 	ejes();
 	circuito();
 
