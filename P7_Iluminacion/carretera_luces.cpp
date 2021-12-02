@@ -51,7 +51,7 @@ static int mirar = 1;		//Constante para controlar la distancia entre la camara y
 
 //Flags de control
 //Vista normal = 1/ Vista pajaro = 0
-static int vista = 1;
+static int vista= 1;
 static int noche = 0;
 
 
@@ -126,7 +126,7 @@ void circuito() {
 	int l = ancho / 2;
 	for (int i = 1; i <= nQuads; i++) {
 
-		float punto = Z + (i - 1) * distancia;
+		float punto = Z-10 + (i - 1) * distancia;
 		float siguiente = punto + distancia;
 
 		float x = funcionCarretera(punto);
@@ -163,7 +163,7 @@ void luzfoco() {
 		GLfloat focoA[] = { 0.2, 0.2, 0.2, 1.0 };
 		GLfloat focoD[] = { 1.00, 1.00, 1.00, 1.0 };
 		GLfloat focoS[] = { 0.3, 0.3, 0.3, 1.0 };
-		GLfloat focoM[] = { 0.0, -0.5, -0.6};  // Esto esta mal???? Preguntar al profesor
+		GLfloat focoM[] = { 0.0, -0.5, 1.0};  // Esto esta mal???? Preguntar al profesor
 
 		
 		glLightfv(GL_LIGHT1, GL_AMBIENT, focoA);
@@ -252,8 +252,9 @@ void display()
 	glLoadIdentity();
 
 	if (noche) glClearColor(0.0, 0.0, 0.0, 1.0); //Fondo negro
-	else glClearColor(1.0, 1.0, 1.0, 1.0);		//Fondo blanco
-	luzfoco();
+	else glClearColor(1.0, 1.0, 1.0, 1.0);		 //Fondo blanco
+	
+	if (vista) luzfoco();						 //Vista de pajaro = No se activa el foco
 	
 
 	/*
