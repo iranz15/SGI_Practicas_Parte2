@@ -78,7 +78,6 @@ void init()
 	glEnable(GL_DEPTH_TEST);		//Test de profundidad
 	glEnable(GL_NORMALIZE);			//Normalizacion vectores iluminacion
 
-
 }
 
 
