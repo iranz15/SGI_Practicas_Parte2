@@ -82,7 +82,7 @@ void init()
 
 
 
-float funcionCarretera(int punto) {
+float funcionCarretera(float punto) {
 
 	return amplitud * sin(punto * 2 * PI / periodo);
 
@@ -96,7 +96,7 @@ float normal(float d) {
 }
 
 
-float derivada(int punto) {
+float derivada(float punto) {
 
 	return(((2 * PI * amplitud) / periodo) * cos(punto * 2 * PI / periodo));
 }
@@ -126,8 +126,8 @@ void circuito() {
 	int l = ancho / 2;
 	for (int i = 1; i <= nQuads; i++) {
 
-		int punto = Z + (i - 1) * distancia;
-		int siguiente = punto + distancia;
+		float punto = Z + (i - 1) * distancia;
+		float siguiente = punto + distancia;
 
 		float x = funcionCarretera(punto);
 		float d = derivada(punto);
@@ -209,11 +209,13 @@ void luces() {
 			Sacamos el inicio del periodo en cada momento
 			*/
 			float detras = 0;
-			float inicioPeriodo = Z - remainder(Z,periodo);
-			float distanciaFarolas = (periodo / 4) * ((float)i - 2);
-			if (inicioPeriodo+ distanciaFarolas < Z) { detras = 1; }			//Si detras de la camara, generamos en el siguiente periodo
+			float inicioPeriodo = (int)Z - (int)Z % (int)periodo;		 // Casting para poder sacar bien el inico del periodo
+			float distanciaFarolas = (periodo / 4.f) * ((float)i - 2.f);
 
-			GLfloat lP[] = { funcionCarretera(inicioPeriodo + distanciaFarolas + (periodo*detras) ), 4.0, inicioPeriodo + distanciaFarolas + (periodo * detras), 1.0 };
+			//if (i == 5) { printf("%.6f\n", distanciaFarolas );  }
+			printf("%.2f\n", inicioPeriodo);
+			if (inicioPeriodo + distanciaFarolas < Z) { detras = 1; }			//Si detras de la camara, generamos en el siguiente periodo
+			GLfloat lP[] = { funcionCarretera(inicioPeriodo + distanciaFarolas + (periodo * detras) ), 4.0, inicioPeriodo + distanciaFarolas + (periodo * detras), 1.0 };
 			//Ambiental 0 por defecto
 			GLfloat lD[] = { 0.5, 0.5, 0.2, 1.0 };
 			//Ambiental 0 por defecto
@@ -311,7 +313,9 @@ void onTimer(int valor) {
 	stringstream titulo;
 	titulo << fixed;
 	titulo.precision(1); // De esta forma no aparecen errores de coma flotante en la ventana
-	titulo << velocidad << "m/s";
+	//titulo << velocidad << "m/s";
+	//glutSetWindowTitle(titulo.str().c_str());
+	titulo << Z << "metros";
 	glutSetWindowTitle(titulo.str().c_str());
 
 	glutTimerFunc(1000 / tasaFPS, onTimer, tasaFPS);
