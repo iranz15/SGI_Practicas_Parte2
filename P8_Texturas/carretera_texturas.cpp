@@ -1,6 +1,6 @@
 /*!
-	\file		carretera_luces.cpp
-	\brief		Practica 7 Iluminacion
+	\file		carretera_texturas.cpp
+	\brief		Practica 8 Iluminacion
 	\author		Jorge Iranzo' <jorirsan@upv.es>
 	\date		2021-2022
  */
@@ -19,7 +19,6 @@
 
 
 static const int tasaFPS = 60;
-static enum { SOLIDO, ALAMBRICO } modoVisu;
 static float coef[16];    // Matriz MODELVIEW
 
 //Constantes para guardar la hora actual del sistema
@@ -37,8 +36,8 @@ static float Z = 0;
 
 //Variables de generacion de la carretera
 static float amplitud = 8;
-static float periodo = 50;
-static int nQuads = 50;
+static float periodo = 70;
+static int nQuads = 70;
 static int ancho = 4;
 static int distancia = 1;
 
@@ -51,8 +50,12 @@ static int mirar = 1;		//Constante para controlar la distancia entre la camara y
 
 //Flags de control
 //Vista normal = 1/ Vista pajaro = 0
-static int vista= 1;
+static int vista = 1;
 static int noche = 0;
+static int modoSimple = 0;
+
+//Lista de variables de textura
+GLuint textura[5];
 
 
 /*		Vista de pajaro
@@ -68,6 +71,26 @@ X+    <---------|-------->     -X
 
 
 
+void texturas() {
+
+	//Carretera
+	glEnable(GL_TEXTURE_2D);
+	glGenTextures(1, &textura[1]);
+	glBindTexture(GL_TEXTURE_2D, textura[1]);
+	loadImageFile((char*)"mario_kart_road.png");
+
+	//Anuncio
+	glEnable(GL_TEXTURE_2D);
+	glGenTextures(1, &textura[2]);
+	glBindTexture(GL_TEXTURE_2D, textura[2]);
+	loadImageFile((char*)"anuncio_kirby.png");
+	glEnable(GL_TEXTURE_2D);
+
+	//Fondo
+	glGenTextures(1, &textura[3]);
+	glBindTexture(GL_TEXTURE_2D, textura[3]);
+	loadImageFile((char*)"rainbow_road_fondo.jpg");
+}
 
 
 void init()
@@ -77,9 +100,31 @@ void init()
 
 	glEnable(GL_DEPTH_TEST);		//Test de profundidad
 	glEnable(GL_NORMALIZE);			//Normalizacion vectores iluminacion
-
+	texturas();						//Carga todas las texturas. NO se puede poner en el display
+									//porque si no estaria cargando las texturas cada frame y va lentisimo
 }
 
+//Borde izqueira y borde derecha del anuncio
+void anuncio(GLfloat* v0, GLfloat* v1, GLfloat* v2, GLfloat* v3) {
+
+	printf("fdsadsadsadsadsadsadsadsa");
+
+	GLfloat a0[3] = { v0[0], 0.0 ,  v0[2] };
+	GLfloat a3[3] = { v3[0] , 0.0 , v3[2] };
+
+	GLfloat a1[3] = { v1[0], 10.0 , v1[2] };
+	GLfloat a2[3] = { v2[0] , 10.0 , v2[2] };
+
+	glPushMatrix();
+	glBindTexture(GL_TEXTURE_2D, textura[2]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
+	else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	//alternativamente GL_REPLACE o se puede usar el canal alfa con GL_BLEND
+	quadtex(a0, a1, a2, a3, 0, 1, 0, 1, 10, 10);
+	glPopMatrix();
+}
 
 
 float funcionCarretera(float punto) {
@@ -105,10 +150,11 @@ float derivada(float punto) {
 void circuito() {
 
 
-	if (noche) {
+	if (noche & !modoSimple) {
 
 		//Emisivo por defecto
 		//Ambiental por defecto
+		
 		glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
 		glEnable(GL_COLOR_MATERIAL);
 
@@ -120,13 +166,14 @@ void circuito() {
 		glMaterialf(GL_FRONT, GL_SHININESS, s);
 
 		glColor3f(0.7, 0.7, 0.7);
+		
 
 	}
 	else { glColor3f(0, 0, 0); }
 	int l = ancho / 2;
 	for (int i = 1; i <= nQuads; i++) {
 
-		float punto = Z-10 + (i - 1) * distancia;
+		float punto = Z - 10 + (i - 1) * distancia;
 		float siguiente = punto + distancia;
 
 		float x = funcionCarretera(punto);
@@ -143,13 +190,49 @@ void circuito() {
 		GLfloat v1[3] = { x1 - (n1 * l), 0.0 , siguiente - (-1 * d1 * n1 * l) };
 		GLfloat v2[3] = { x1 + (n1 * l) , 0.0 , siguiente + (-1 * d1 * n1 * l) };
 
+		//if (i = nQuads / 2) anuncio(v0, v1, v2, v3); 		//El anuncio se genera a mitad de ampitud de onda
+
+		glPushMatrix();
+		glBindTexture(GL_TEXTURE_2D, textura[1]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		if(noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
+		else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 		
-		if (i < nQuads ) quad(v0, v1, v2, v3, 10, 10);
-		else quad(v0, v1, v2, v3, 1, 1);
+		//alternativamente GL_REPLACE o se puede usar el canal alfa con GL_BLEND
+		quadtex(v0, v1, v2, v3,0,-1,0,-1, 10, 10);
+		glPopMatrix();
 
 	}
 
 
+}
+void fondo() {
+	glPushMatrix();
+	glBindTexture(GL_TEXTURE_2D, textura[3]);
+	float alpha = 2 * PI / 50;
+	GLfloat cil0[3] = { 200 * cos(0) + X,100,200 * -sin(0) + Z };
+	GLfloat cil1[3] = { 200 * cos(0) + X,-55,200 * -sin(0) + Z};
+	GLfloat cil2[3];
+	GLfloat cil3[3];
+	for (int i = 1; i <= 50; i++) {
+		cil2[0] = 200 * cos(i * alpha) + X;
+		cil2[1] = 100;
+		cil2[2] = 200 * -sin(i * alpha) + Z;
+		cil3[0] = 200 * cos(i * alpha) + X;
+		cil3[1] = -55;
+		cil3[2] = 200 * -sin(i * alpha) + Z;
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glColor3f(0, 0, 1);
+		quadtex(cil3, cil1, cil0, cil2, (i) / 50.0 + 0.5, (i - 1.0) / 50.0 + 0.5, 0, 1);
+		for (int j = 0; j < 3; j++) {
+			cil0[j] = cil2[j];
+			cil1[j] = cil3[j];
+		}
+	}
+	glPopMatrix();
 }
 
 void luzfoco() {
@@ -163,10 +246,10 @@ void luzfoco() {
 		GLfloat focoA[] = { 0.2, 0.2, 0.2, 1.0 };
 		GLfloat focoD[] = { 1.00, 1.00, 1.00, 1.0 };
 		GLfloat focoS[] = { 0.3, 0.3, 0.3, 1.0 };
-		GLfloat focoM[] = { 0.0, -0.5, -1.0};  // Preguntar exactamente 
-		
+		GLfloat focoM[] = { 0.0, -0.6, -1.0 };  // Preguntar exactamente 
 
-		
+
+
 		glLightfv(GL_LIGHT1, GL_AMBIENT, focoA);
 		glLightfv(GL_LIGHT1, GL_DIFFUSE, focoD);
 		glLightfv(GL_LIGHT1, GL_SPECULAR, focoS);
@@ -207,7 +290,7 @@ void luces() {
 			GLenum GL_LIGHTi = GL_LIGHT0 + i;
 
 			/*Posicion depende del circuito
-			Ponemos las farolas equitativamente respecto la funcion 
+			Ponemos las farolas equitativamente respecto la funcion
 			*/
 			float detras = 0;
 			float inicioPeriodo = (int)Z - (int)Z % (int)periodo;		 // Casting para poder sacar bien el inico del periodo
@@ -215,7 +298,7 @@ void luces() {
 
 			//if (i == 5) { printf("%.6f\n", distanciaFarolas );  }
 			if (inicioPeriodo + distanciaFarolas < Z) { detras = 1; }			//Si detras de la camara, generamos en el siguiente periodo y no se genera detras
-			GLfloat lP[] = { funcionCarretera(inicioPeriodo + distanciaFarolas + (periodo * detras) ), 4.0, inicioPeriodo + distanciaFarolas + (periodo * detras), 1.0 };
+			GLfloat lP[] = { funcionCarretera(inicioPeriodo + distanciaFarolas + (periodo * detras)), 4.0, inicioPeriodo + distanciaFarolas + (periodo * detras), 1.0 };
 			//Ambiental 0 por defecto
 			GLfloat lD[] = { 0.5, 0.5, 0.2, 1.0 };
 			//Ambiental 0 por defecto
@@ -245,40 +328,39 @@ void luces() {
 	}
 }
 
+
+
+
 void display()
 {
-
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	if (noche) glClearColor(0.0, 0.0, 0.0, 1.0); //Fondo negro
+	if (noche && !modoSimple) glClearColor(0.0, 0.0, 0.0, 1.0); //Fondo negro
 	else glClearColor(1.0, 1.0, 1.0, 1.0);		 //Fondo blanco
-	
-	if (vista) luzfoco();						 //Vista de pajaro = No se activa el foco
-	
 
-	/*
-	glRotatef(angulo, 0, 1, 0); 
-	glMultMatrixf(coef);
-	glGetFloatv(GL_MODELVIEW_MATRIX, coef);
-	glLoadIdentity();
-	gluLookAt(X, Y, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
-	glMultMatrixf(coef); 
-	*/
+	if (vista) luzfoco();						 //Vista de pajaro = No se activa el foco
+
+
 	if (vista) gluLookAt(X, Y, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
 	else gluLookAt(X, Y + 50, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
-	
-	if (modoVisu == ALAMBRICO)
+
+	if (modoSimple){
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-	else
+		glDisable(GL_LIGHTING);
+		glDisable(GL_TEXTURE_2D);
+	}
+	else {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
+		glEnable(GL_TEXTURE_2D);				 // esto asegura que se cargan las tecturas otra vez si se ponen modo simple y luego se pasa al texturado
+		fondo();
+	}
+	
+	
 	ejes();
 	circuito();
 	luces();
-
 	glutSwapBuffers();
 
 
@@ -292,7 +374,7 @@ void reshape(GLint w, GLint h)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	float razon = (float)w / h;
-	gluPerspective(45, razon, 1, 100);
+	gluPerspective(45, razon, 1, 200);
 }
 
 
@@ -332,11 +414,10 @@ void onKey(unsigned char tecla, int x, int y) {
 
 	switch (tecla) {
 
-	case 'a':
-		modoVisu = ALAMBRICO;
-		break;
+	case 'S':
 	case 's':
-		modoVisu = SOLIDO;
+		if (modoSimple) modoSimple = 0;
+		else modoSimple = 1;
 		break;
 	case 'c':
 		if (vista)
@@ -390,6 +471,7 @@ void onSpecialKey(int specialKey, int x, int y) {
 
 void main(int argc, char** argv) {
 	//Inicializacion, buffer, tamaño ventana inicial, llamada a init, etc...
+	FreeImage_Initialise();
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(1000, 1000);
@@ -403,6 +485,7 @@ void main(int argc, char** argv) {
 	//glutIdleFunc(onIdle);
 	glutTimerFunc(1000 / tasaFPS, onTimer, tasaFPS);
 	glutMainLoop();
+	FreeImage_DeInitialise();
 }
 
 
