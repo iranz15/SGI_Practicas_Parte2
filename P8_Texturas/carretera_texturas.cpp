@@ -292,6 +292,8 @@ void luces() {
 		glLightfv(GL_LIGHT0, GL_SPECULAR, lunaS);
 		glEnable(GL_LIGHT0);
 
+		float inicioPeriodo = (int)Z - (int)Z % (int)periodo;
+
 		for (int i = 2; i <= 5; i++) {
 			GLenum GL_LIGHTi = GL_LIGHT0 + i;
 
@@ -299,7 +301,7 @@ void luces() {
 			Ponemos las farolas equitativamente respecto la funcion
 			*/
 			float detras = 0;
-			float inicioPeriodo = (int)Z - (int)Z % (int)periodo;		 // Casting para poder sacar bien el inico del periodo
+				 // Casting para poder sacar bien el inico del periodo
 			float distanciaFarolas = (periodo / 4.f) * ((float)i - 2.f);
 
 			//if (i == 5) { printf("%.6f\n", distanciaFarolas );  }
