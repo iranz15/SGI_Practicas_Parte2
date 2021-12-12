@@ -80,11 +80,9 @@ void texturas() {
 	loadImageFile((char*)"mario_kart_road.png");
 
 	//Anuncio
-	glEnable(GL_TEXTURE_2D);
 	glGenTextures(1, &textura[2]);
 	glBindTexture(GL_TEXTURE_2D, textura[2]);
 	loadImageFile((char*)"anuncio_kirby.png");
-	glEnable(GL_TEXTURE_2D);
 
 	//Fondo
 	glGenTextures(1, &textura[3]);
@@ -104,33 +102,6 @@ void init()
 									//porque si no estaria cargando las texturas cada frame y va lentisimo
 }
 
-//Borde izqueira y borde derecha del anuncio
-void anuncio(float* v0, float* v3) {
-
-	
-	/*
-	GLfloat a0[3] = { v0[0], 0.0 ,  v0[2] };
-	GLfloat a3[3] = { v3[0] , 0.0 , v3[2] };
-
-	GLfloat a1[3] = { v0[0], 10.0 , v0[2] };
-	GLfloat a2[3] = { v3[0] , 10.0 , v3[2] };
-	*/
-	GLfloat a0[3] = { 0, 0.0 ,  10 };
-	GLfloat a3[3] = { 0 , 0.0 , 10 };
-
-	GLfloat a1[3] = { 0 , 1.0 , 3 };
-	GLfloat a2[3] = { 0 , 1.0 , 3 };
-
-	//glPushMatrix();
-	glBindTexture(GL_TEXTURE_2D, textura[2]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
-	else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	//alternativamente GL_REPLACE o se puede usar el canal alfa con GL_BLEND
-	quadtex(a0, a1, a2, a3, 0, 1, 0, 1, 10, 10);
-	//glPopMatrix();
-}
 
 
 float funcionCarretera(float punto) {
@@ -152,10 +123,40 @@ float derivada(float punto) {
 	return(((2 * PI * amplitud) / periodo) * cos(punto * 2 * PI / periodo));
 }
 
+void anuncio(float distancia) {
+	glPushMatrix();
+	float detras = 0;
+	int l = ancho / 2;
+	float inicioPeriodo = (int)Z - (int)Z % (int)periodo;
+	float distanciaAnuncio = periodo / distancia;
+
+	if (inicioPeriodo + distanciaAnuncio < Z) { detras = 1; }
+	distanciaAnuncio += inicioPeriodo + (periodo * detras);
+
+	float x = funcionCarretera(distanciaAnuncio);
+	float d = derivada(distanciaAnuncio);
+	float n = normal(d);
+
+	GLfloat v0[3] = { x - (n * l), 0.0 , distanciaAnuncio - (-1 * d * n * l) };
+	GLfloat v3[3] = { x + (n * l) , 0.0 , distanciaAnuncio + (-1 * d * n * l) };
+	GLfloat a0[3] = { v0[0], 2, v0[2] };
+	GLfloat a1[3] = { v0[0], 3 , v0[2] };
+	GLfloat a2[3] = { v3[0], 3, v3[2] };
+	GLfloat a3[3] = { v3[0], 2, v3[2] };
+
+	glBindTexture(GL_TEXTURE_2D, textura[2]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	//alternativamente GL_REPLACE o se puede usar el canal alfa con GL_BLEND
+	quadtex(a3, a0, a1, a2, 0, 1, 0, 1, 10, 10);
+	glPopMatrix();
+
+}
 
 void circuito() {
-
-
+	glPushMatrix();
 	if (noche & !modoSimple) {
 
 		//Emisivo por defecto
@@ -166,14 +167,13 @@ void circuito() {
 
 		GLfloat cD[] = { 0.5,0.7,0.6,1.0 };
 		GLfloat cS[] = { 0.3,0.3,0.3,1.0 };
-		GLfloat s = 3.0;
-		glMaterialfv(GL_FRONT, GL_DIFFUSE, cD);
-		glMaterialfv(GL_FRONT, GL_SPECULAR, cS);
-		glMaterialf(GL_FRONT, GL_SHININESS, s);
+		GLfloat s = 120.0;
+		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, cD);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, cS);
+		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, s);
 
-		glColor3f(0.7, 0.7, 0.7);
+		glColor3f(1, 1, 1);
 		
-
 	}
 	else { glColor3f(0, 0, 0); }
 	int l = ancho / 2;
@@ -196,9 +196,7 @@ void circuito() {
 		GLfloat v1[3] = { x1 - (n1 * l), 0.0 , siguiente - (-1 * d1 * n1 * l) };
 		GLfloat v2[3] = { x1 + (n1 * l) , 0.0 , siguiente + (-1 * d1 * n1 * l) };
 
-		// if (i = nQuads / 2) anuncio(v0, v3); 		//El anuncio se genera a mitad de ampitud de onda
-
-		glPushMatrix();
+		
 		glBindTexture(GL_TEXTURE_2D, textura[1]);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -207,11 +205,10 @@ void circuito() {
 		
 		//GL_MODULATE/ GL_REPLACE o se puede usar el canal alfa con GL_BLEND
 		quadtex(v0, v1, v2, v3,0,-1,0,-1, 10, 10);
-		glPopMatrix();
+		
 
 	}
-
-
+	glPopMatrix();
 }
 void fondo() {
 	glPushMatrix();
@@ -248,19 +245,18 @@ void luzfoco() {
 	if (noche) {
 
 
-		GLfloat focoP[] = { 0, 0.7, 0, 1.0 };
+		GLfloat focoP[] = { 0, 0.8, 0, 1.0 };
 		GLfloat focoA[] = { 0.2, 0.2, 0.2, 1.0 };
 		GLfloat focoD[] = { 1.00, 1.00, 1.00, 1.0 };
 		GLfloat focoS[] = { 0.3, 0.3, 0.3, 1.0 };
-		GLfloat focoM[] = { 0.0, -0.6, -1.0 };  // Preguntar exactamente 
-
+		GLfloat focoM[] = { 0.0, -0.8, -1.0 };  
 
 
 		glLightfv(GL_LIGHT1, GL_AMBIENT, focoA);
 		glLightfv(GL_LIGHT1, GL_DIFFUSE, focoD);
 		glLightfv(GL_LIGHT1, GL_SPECULAR, focoS);
 		glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 25.0);
-		glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 20.0);
+		glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 5.0);
 
 		glLightfv(GL_LIGHT1, GL_POSITION, focoP);
 		glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, focoM);
@@ -350,7 +346,6 @@ void display()
 
 	if (vista) luzfoco();						 //Vista de pajaro = No se activa el foco
 
-
 	if (vista) gluLookAt(X, Y, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
 	else gluLookAt(X, Y + 50, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
 
@@ -368,6 +363,7 @@ void display()
 	
 	ejes();
 	circuito();
+	anuncio(2.f); 		//El anuncio se genera a mitad de ampitud de onda
 	luces();
 	glutSwapBuffers();
 
