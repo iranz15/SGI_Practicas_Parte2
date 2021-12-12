@@ -244,13 +244,11 @@ void luzfoco() {
 
 	if (noche) {
 
-
 		GLfloat focoP[] = { 0, 0.8, 0, 1.0 };
 		GLfloat focoA[] = { 0.2, 0.2, 0.2, 1.0 };
 		GLfloat focoD[] = { 1.00, 1.00, 1.00, 1.0 };
 		GLfloat focoS[] = { 0.3, 0.3, 0.3, 1.0 };
 		GLfloat focoM[] = { 0.0, -0.8, -1.0 };  
-
 
 		glLightfv(GL_LIGHT1, GL_AMBIENT, focoA);
 		glLightfv(GL_LIGHT1, GL_DIFFUSE, focoD);
@@ -305,7 +303,6 @@ void luces() {
 			GLfloat lP[] = { funcionCarretera(inicioPeriodo + distanciaFarolas + (periodo * detras)), 4.0, inicioPeriodo + distanciaFarolas + (periodo * detras), 1.0 };
 			//Ambiental 0 por defecto
 			GLfloat lD[] = { 0.5, 0.5, 0.2, 1.0 };
-			//Ambiental 0 por defecto
 			GLfloat lM[] = { 0.0, -1.0, 0.0 };
 
 			glLightfv(GL_LIGHTi, GL_POSITION, lP);
