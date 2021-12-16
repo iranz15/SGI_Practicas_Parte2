@@ -37,9 +37,10 @@ static float Z = 0;
 //Variables de generacion de la carretera
 static float amplitud = 8;
 static float periodo = 70;
-static int nQuads = 70;
+static int nQuads = 90;
 static int ancho = 4;
 static int distancia = 1;
+static float threshold = 10;
 
 //Variables de control de camara
 static float ratioGiro = 5;
@@ -52,10 +53,13 @@ static int mirar = 1;		//Constante para controlar la distancia entre la camara y
 //Vista normal = 1/ Vista pajaro = 0
 static int vista = 1;
 static int noche = 0;
+static int niebla = 0;
+static int HUD = 1;
 static int modoSimple = 0;
+static int cielo = 3;
 
 //Lista de variables de textura
-GLuint textura[5];
+GLuint textura[10];
 
 
 /*		Vista de pajaro
@@ -84,10 +88,19 @@ void texturas() {
 	glBindTexture(GL_TEXTURE_2D, textura[2]);
 	loadImageFile((char*)"anuncio_kirby.png");
 
-	//Fondo
+	//Fondo 1
 	glGenTextures(1, &textura[3]);
 	glBindTexture(GL_TEXTURE_2D, textura[3]);
 	loadImageFile((char*)"rainbow_road_fondo.jpg");
+
+	//Fondo 2
+	glGenTextures(1, &textura[4]);
+	glBindTexture(GL_TEXTURE_2D, textura[4]);
+	loadImageFile((char*)"agujero_fondo.jpg");
+
+	glGenTextures(1, &textura[5]);
+	glBindTexture(GL_TEXTURE_2D, textura[5]);
+	loadImageFile((char*)"estrellas.png");
 }
 
 
@@ -151,6 +164,24 @@ void anuncio(float distancia) {
 	else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	//alternativamente GL_REPLACE o se puede usar el canal alfa con GL_BLEND
 	quadtex(a3, a0, a1, a2, 0, 1, 0, 1, 10, 10);
+
+	
+	if (noche) {
+		GLfloat lP[] = { x, 2.5, distanciaAnuncio - 4, 1.0 };
+		GLfloat lD[] = { 0.8, 0.8, 0.8, 1.0 };
+		GLfloat lM[] = { 0.0, 0.0, 1.0 };
+		glLightfv(GL_LIGHT6, GL_POSITION, lP);
+		glLightfv(GL_LIGHT6, GL_DIFFUSE, lD);
+		glLightfv(GL_LIGHT6, GL_SPOT_DIRECTION, lM);
+		glLightf(GL_LIGHT6, GL_SPOT_CUTOFF, 50.0);
+		glLightf(GL_LIGHT6, GL_SPOT_EXPONENT, 10.0);
+		glEnable(GL_LIGHT6);
+	}
+	
+	else {
+		glDisable(GL_LIGHT6);
+	}
+	
 	glPopMatrix();
 
 }
@@ -161,27 +192,22 @@ void circuito() {
 
 		//Emisivo por defecto
 		//Ambiental por defecto
-		
-		glColorMaterial(GL_FRONT, GL_DIFFUSE);
-		glEnable(GL_COLOR_MATERIAL);
-
-		GLfloat cD[] = { 0.5,0.7,0.6,1.0 };
+		GLfloat cD[] = { 0.8,0.8,0.8,1.0 };
 		GLfloat cS[] = { 0.3,0.3,0.3,1.0 };
-		GLfloat s = 2.0;
+		GLfloat s = 3.0;
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, cD);
 		glMaterialfv(GL_FRONT, GL_SPECULAR, cS);
 		glMaterialf(GL_FRONT, GL_SHININESS, s);
-
-		glColor3f(1, 1, 1);
 		
 	}
 	else { glColor3f(0, 0, 0); }
 	int l = ancho / 2;
 	for (int i = 1; i <= nQuads; i++) {
 		float detras = 0;
-		float inicioPeriodo = (int)Z - (int)Z % (int)periodo;
-		float punto = inicioPeriodo -10 + (i - 1) * distancia ;
-		if (punto < Z) { punto += periodo; }
+		
+		float inicioPeriodo = ((int)Z - (int)Z % (int)periodo) ;
+		float punto = inicioPeriodo + (i - 1) * distancia ;
+		if (punto <= Z) { punto += periodo; }
 		float siguiente = punto + distancia;
 
 		float x = funcionCarretera(punto);
@@ -218,10 +244,21 @@ void circuito() {
 }
 void fondo() {
 	glPushMatrix();
-	glBindTexture(GL_TEXTURE_2D, textura[3]);
+	glBindTexture(GL_TEXTURE_2D, textura[cielo]);
+
+	if (noche) {
+		GLfloat cD[] = { 0.0,0.0,0.0,1.0 };
+		GLfloat cS[] = { 0.0,0.0,0.0,1.0 };
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, cD);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, cS);
+		if(cielo == 4){
+		GLfloat cE[] = { 0.1,0.1,0.1,1.0 };
+		glMaterialfv(GL_FRONT, GL_EMISSION, cE);
+		}
+	}
 	float nquads = 10;
 	float alpha = 2 * PI / nquads;
-	float r = 200;
+	float r = 100;
 	float x = r * cos(0); //0 porque en la priemra tiracion del bloque se incilizada en alpha * 1 = alpha (1)
 	float z = r * sin(0); //(0)
 	int altura = 200;
@@ -243,7 +280,7 @@ void fondo() {
 		if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 		glColor3f(0, 0, 1);
-		quadtex(cil0, cil1, cil2, cil3, (i *alpha) / (2 * PI), ((i + 1.f) * alpha) / (2 * PI), 0, 1,4,4);
+		quadtex(cil0, cil1, cil2, cil3, (i *alpha) / (2 * PI),  ((i + 1.f) * alpha) / (2 * PI), 0, 1,4,4);
 		for (int j = 0; j < 3; j++) {
 			cil0[j] = cil1[j];
 			cil3[j] = cil2[j];
@@ -257,7 +294,7 @@ void luzfoco() {
 	//Cheatsheet luces: https://i.gyazo.com/08d9da01d2b54086b40d41097cb25e75.png
 
 	if (noche) {
-
+		//glPushMatrix();
 		GLfloat focoP[] = { 0, 0.7, 0, 1.0 };
 		GLfloat focoA[] = { 0.2, 0.2, 0.2, 1.0 };
 		GLfloat focoD[] = { 1.00, 1.00, 1.00, 1.0 };
@@ -272,17 +309,19 @@ void luzfoco() {
 
 		glLightfv(GL_LIGHT1, GL_POSITION, focoP);
 		glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, focoM);
-		//glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.15);
+		//glLightf(GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.1);   //Atenuacuion para que la luz no ilumine el fondo
 
 		glEnable(GL_LIGHT1);
 		glEnable(GL_LIGHTING);
-
+		//glPopMatrix();
 	}
 	else {
 		glDisable(GL_LIGHT1);
 		glDisable(GL_LIGHTING);
 	}
 }
+
+
 
 
 void luces() {
@@ -345,6 +384,29 @@ void luces() {
 }
 
 
+void ambiente() {
+	glPushMatrix();
+	if (niebla && !noche) {
+		
+		glEnable(GL_FOG);
+		GLfloat nieblaD[] = { 0.6875, 0.8046875, 0.9765625, 1.0 };
+		glFogfv(GL_FOG_COLOR, nieblaD);
+		glFogf(GL_FOG_DENSITY, 0.25);
+	}
+	else if (niebla && noche) {
+	
+		glEnable(GL_FOG);
+	
+	
+		GLfloat nieblaN[] = { 0.0, 0.0, 0.06, 1.0 };
+		glFogfv(GL_FOG_COLOR, nieblaN);
+		glFogf(GL_FOG_DENSITY, 0.25);
+	
+	}
+	else { glDisable(GL_FOG);
+	}
+	glPopMatrix();
+}
 
 
 void display()
@@ -371,7 +433,7 @@ void display()
 		glEnable(GL_TEXTURE_2D);				 // esto asegura que se cargan las tecturas otra vez si se ponen modo simple y luego se pasa al texturado
 		
 	}
-	
+	ambiente();
 	fondo();
 	ejes();
 	circuito();
@@ -381,7 +443,6 @@ void display()
 
 
 }
-
 
 
 void reshape(GLint w, GLint h)
@@ -435,16 +496,36 @@ void onKey(unsigned char tecla, int x, int y) {
 		if (modoSimple) modoSimple = 0;
 		else modoSimple = 1;
 		break;
-	case 'c':
+	case 'V':
+	case 'v':
 		if (vista)
 			vista = 0;
 		else vista = 1;
 		break;
-	case 'n':
+	case 'L':
+	case 'l':
 		if (noche)
 			noche = 0;
 		else noche = 1;
-
+		break;
+	case 'N':
+	case 'n':
+		if (niebla)
+			niebla = 0;
+		else niebla = 1;
+		break;
+	case 'C':
+	case 'c':
+		if (HUD)
+			HUD = 0;
+		else HUD = 1;
+		break;
+	case 'W':
+	case 'w':
+		switch (cielo) {
+			case 5:  cielo = 3; break;
+			default: cielo++;
+		}
 		break;
 	case 27:
 		exit(0);
@@ -460,8 +541,6 @@ void onSpecialKey(int specialKey, int x, int y) {
 
 	switch (specialKey) {
 
-
-
 	case GLUT_KEY_UP:
 		velocidad += 0.1;
 		break;
@@ -476,8 +555,6 @@ void onSpecialKey(int specialKey, int x, int y) {
 	case GLUT_KEY_RIGHT:
 		angulo += ratioGiro;
 		break;
-
-
 	}
 
 	glutPostRedisplay();
