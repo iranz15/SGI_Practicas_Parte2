@@ -178,8 +178,10 @@ void circuito() {
 	else { glColor3f(0, 0, 0); }
 	int l = ancho / 2;
 	for (int i = 1; i <= nQuads; i++) {
-
-		float punto = Z - 10 + (i - 1) * distancia;
+		float detras = 0;
+		float inicioPeriodo = (int)Z - (int)Z % (int)periodo;
+		float punto = inicioPeriodo  + (i - 1) * distancia ;
+		if (punto < Z) { punto += periodo; }
 		float siguiente = punto + distancia;
 
 		float x = funcionCarretera(punto);
