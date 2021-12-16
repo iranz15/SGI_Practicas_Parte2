@@ -398,9 +398,9 @@ void ambiente() {
 		glEnable(GL_FOG);
 	
 	
-		GLfloat nieblaN[] = { 0.0, 0.0, 0.06, 1.0 };
+		GLfloat nieblaN[] = { 0.0, 0.0, 0.02, 1.0 };
 		glFogfv(GL_FOG_COLOR, nieblaN);
-		glFogf(GL_FOG_DENSITY, 0.25);
+		glFogf(GL_FOG_DENSITY, 0.15);
 	
 	}
 	else { glDisable(GL_FOG);
