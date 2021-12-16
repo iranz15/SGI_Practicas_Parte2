@@ -180,7 +180,7 @@ void circuito() {
 	for (int i = 1; i <= nQuads; i++) {
 		float detras = 0;
 		float inicioPeriodo = (int)Z - (int)Z % (int)periodo;
-		float punto = inicioPeriodo  + (i - 1) * distancia ;
+		float punto = inicioPeriodo -10 + (i - 1) * distancia ;
 		if (punto < Z) { punto += periodo; }
 		float siguiente = punto + distancia;
 
@@ -215,26 +215,34 @@ void circuito() {
 void fondo() {
 	glPushMatrix();
 	glBindTexture(GL_TEXTURE_2D, textura[3]);
-	float alpha = 2 * PI / 50;
-	GLfloat cil0[3] = { 200 * cos(0) + X,100,200 * -sin(0) + Z };
-	GLfloat cil1[3] = { 200 * cos(0) + X,-55,200 * -sin(0) + Z};
+	float nquads = 10;
+	float alpha = 2 * PI / nquads;
+	float r = periodo;
+	float x = r * cos(alpha);
+	float z = r * sin(alpha);
+	int altura = 20;
+	GLfloat cil0[3] = { x + X,-(altura / 2), z + Z };
+	GLfloat cil1[3];
 	GLfloat cil2[3];
-	GLfloat cil3[3];
-	for (int i = 1; i <= 50; i++) {
-		cil2[0] = 200 * cos(i * alpha) + X;
-		cil2[1] = 100;
-		cil2[2] = 200 * -sin(i * alpha) + Z;
-		cil3[0] = 200 * cos(i * alpha) + X;
-		cil3[1] = -55;
-		cil3[2] = 200 * -sin(i * alpha) + Z;
+	GLfloat cil3[3] = { x + X, altura / 2,z + Z };
+	for (int i = 1; i <= nquads; i++) {
+		cil1[0] = r * cos(i * alpha) + X;
+		cil1[1] = cil0[1];
+		cil1[2] = r * sin(i * alpha) + Z;
+
+		cil2[0] = r * cos(i * alpha) + X;
+		cil2[1] = cil3[1];
+		cil2[2] = r * sin(i * alpha) + Z;
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 		glColor3f(0, 0, 1);
-		quadtex(cil3, cil1, cil0, cil2, (i) / 50.0 + 0.5, (i - 1.0) / 50.0 + 0.5, 0, 1);
+		quadtex(cil0, cil1, cil2, cil3, 0, 0 , 1, 1, 1,1);
 		for (int j = 0; j < 3; j++) {
-			cil0[j] = cil2[j];
-			cil1[j] = cil3[j];
+			cil0[j] = cil1[j];
+			cil3[j] = cil2[j];
 		}
 	}
 	glPopMatrix();
@@ -356,10 +364,10 @@ void display()
 	else {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glEnable(GL_TEXTURE_2D);				 // esto asegura que se cargan las tecturas otra vez si se ponen modo simple y luego se pasa al texturado
-		fondo();
+		
 	}
 	
-	
+	fondo();
 	ejes();
 	circuito();
 	anuncio(2.f); 		//El anuncio se genera a mitad de ampitud de onda
