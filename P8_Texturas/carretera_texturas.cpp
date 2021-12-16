@@ -162,15 +162,15 @@ void circuito() {
 		//Emisivo por defecto
 		//Ambiental por defecto
 		
-		glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
+		glColorMaterial(GL_FRONT, GL_DIFFUSE);
 		glEnable(GL_COLOR_MATERIAL);
 
 		GLfloat cD[] = { 0.5,0.7,0.6,1.0 };
 		GLfloat cS[] = { 0.3,0.3,0.3,1.0 };
-		GLfloat s = 120.0;
-		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, cD);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, cS);
-		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, s);
+		GLfloat s = 2.0;
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, cD);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, cS);
+		glMaterialf(GL_FRONT, GL_SHININESS, s);
 
 		glColor3f(1, 1, 1);
 		
@@ -206,7 +206,11 @@ void circuito() {
 		else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 		
 		//GL_MODULATE/ GL_REPLACE o se puede usar el canal alfa con GL_BLEND
-		quadtex(v0, v1, v2, v3,0,-1,0,-1, 10, 10);
+		if (!noche) { quadtex(v0, v1, v2, v3, 0, -1, 0, -1, 1, 1); }
+		else { 
+			if (punto <= Z+7) { quadtex(v0, v1, v2, v3, 0, -1, 0, -1, 30, 110); }
+			else { quadtex(v0, v1, v2, v3, 0, -1, 0, -1, 2, 2); }
+		}
 		
 
 	}
@@ -217,29 +221,29 @@ void fondo() {
 	glBindTexture(GL_TEXTURE_2D, textura[3]);
 	float nquads = 10;
 	float alpha = 2 * PI / nquads;
-	float r = periodo;
-	float x = r * cos(alpha);
-	float z = r * sin(alpha);
-	int altura = 20;
+	float r = 200;
+	float x = r * cos(0); //0 porque en la priemra tiracion del bloque se incilizada en alpha * 1 = alpha (1)
+	float z = r * sin(0); //(0)
+	int altura = 200;
 	GLfloat cil0[3] = { x + X,-(altura / 2), z + Z };
 	GLfloat cil1[3];
 	GLfloat cil2[3];
 	GLfloat cil3[3] = { x + X, altura / 2,z + Z };
 	for (int i = 1; i <= nquads; i++) {
-		cil1[0] = r * cos(i * alpha) + X;
+		cil1[0] = r * (float)cos(i * alpha) + X;
 		cil1[1] = cil0[1];
-		cil1[2] = r * sin(i * alpha) + Z;
+		cil1[2] = r * (float)sin(i * alpha) + Z;
 
-		cil2[0] = r * cos(i * alpha) + X;
+		cil2[0] = r * (float)cos(i * alpha) + X;
 		cil2[1] = cil3[1];
-		cil2[2] = r * sin(i * alpha) + Z;
+		cil2[2] = r * (float)sin(i * alpha) + Z;
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 		glColor3f(0, 0, 1);
-		quadtex(cil0, cil1, cil2, cil3, 0, 0 , 1, 1, 1,1);
+		quadtex(cil0, cil1, cil2, cil3, (i *alpha) / (2 * PI), ((i + 1.f) * alpha) / (2 * PI), 0, 1,4,4);
 		for (int j = 0; j < 3; j++) {
 			cil0[j] = cil1[j];
 			cil3[j] = cil2[j];
@@ -254,20 +258,21 @@ void luzfoco() {
 
 	if (noche) {
 
-		GLfloat focoP[] = { 0, 0.8, 0, 1.0 };
+		GLfloat focoP[] = { 0, 0.7, 0, 1.0 };
 		GLfloat focoA[] = { 0.2, 0.2, 0.2, 1.0 };
 		GLfloat focoD[] = { 1.00, 1.00, 1.00, 1.0 };
 		GLfloat focoS[] = { 0.3, 0.3, 0.3, 1.0 };
-		GLfloat focoM[] = { 0.0, -0.8, -1.0 };  
+		GLfloat focoM[] = { 0.0, -0.5, -0.7 };  
 
 		glLightfv(GL_LIGHT1, GL_AMBIENT, focoA);
 		glLightfv(GL_LIGHT1, GL_DIFFUSE, focoD);
 		glLightfv(GL_LIGHT1, GL_SPECULAR, focoS);
-		glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 25.0);
-		glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 5.0);
+		glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 20.0);
+		glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 20.0);
 
 		glLightfv(GL_LIGHT1, GL_POSITION, focoP);
 		glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, focoM);
+		//glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.15);
 
 		glEnable(GL_LIGHT1);
 		glEnable(GL_LIGHTING);
