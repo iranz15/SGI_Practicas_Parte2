@@ -37,7 +37,7 @@ static float Z = 0;
 //Variables de generacion de la carretera
 static float amplitud = 8;
 static float periodo = 70;
-static int nQuads = 90;
+static int nQuads = 70;
 static int ancho = 4;
 static int distancia = 1;
 static float threshold = 10;
@@ -100,7 +100,12 @@ void texturas() {
 
 	glGenTextures(1, &textura[5]);
 	glBindTexture(GL_TEXTURE_2D, textura[5]);
-	loadImageFile((char*)"estrellas.png");
+	loadImageFile((char*)"estrellas_fondo.png");
+
+
+	glGenTextures(1, &textura[6]);
+	glBindTexture(GL_TEXTURE_2D, textura[6]);
+	loadImageFile((char*)"luna_fondo_2.jpg");
 }
 
 
@@ -163,9 +168,7 @@ void anuncio(float distancia) {
 	if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	//alternativamente GL_REPLACE o se puede usar el canal alfa con GL_BLEND
-	quadtex(a3, a0, a1, a2, 0, 1, 0, 1, 10, 10);
 
-	
 	if (noche) {
 		GLfloat lP[] = { x, 2.5, distanciaAnuncio - 4, 1.0 };
 		GLfloat lD[] = { 0.8, 0.8, 0.8, 1.0 };
@@ -174,13 +177,17 @@ void anuncio(float distancia) {
 		glLightfv(GL_LIGHT6, GL_DIFFUSE, lD);
 		glLightfv(GL_LIGHT6, GL_SPOT_DIRECTION, lM);
 		glLightf(GL_LIGHT6, GL_SPOT_CUTOFF, 50.0);
-		glLightf(GL_LIGHT6, GL_SPOT_EXPONENT, 10.0);
+		glLightf(GL_LIGHT6, GL_SPOT_EXPONENT, 25.0);
 		glEnable(GL_LIGHT6);
 	}
-	
+
 	else {
 		glDisable(GL_LIGHT6);
 	}
+
+	quadtex(a3, a0, a1, a2, 0, 1, 0, 1, 10, 10);
+
+
 	
 	glPopMatrix();
 
@@ -280,7 +287,7 @@ void fondo() {
 		if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 		glColor3f(0, 0, 1);
-		quadtex(cil0, cil1, cil2, cil3, (i *alpha) / (2 * PI),  ((i + 1.f) * alpha) / (2 * PI), 0, 1,4,4);
+		quadtex(cil0, cil1, cil2, cil3, 0.25+(i *alpha) / (2 * PI),0.25 + ((i + 1.f) * alpha) / (2 * PI), 0, 1,4,4);
 		for (int j = 0; j < 3; j++) {
 			cil0[j] = cil1[j];
 			cil3[j] = cil2[j];
@@ -305,7 +312,7 @@ void luzfoco() {
 		glLightfv(GL_LIGHT1, GL_DIFFUSE, focoD);
 		glLightfv(GL_LIGHT1, GL_SPECULAR, focoS);
 		glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 20.0);
-		glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 20.0);
+		glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 25.0);
 
 		glLightfv(GL_LIGHT1, GL_POSITION, focoP);
 		glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, focoM);
@@ -390,6 +397,7 @@ void ambiente() {
 		
 		glEnable(GL_FOG);
 		GLfloat nieblaD[] = { 0.6875, 0.8046875, 0.9765625, 1.0 };
+		GLfloat nieblaA[] = { 0.6875, 0.8046875, 0.9765625, 1.0 };
 		glFogfv(GL_FOG_COLOR, nieblaD);
 		glFogf(GL_FOG_DENSITY, 0.25);
 	}
@@ -523,7 +531,7 @@ void onKey(unsigned char tecla, int x, int y) {
 	case 'W':
 	case 'w':
 		switch (cielo) {
-			case 5:  cielo = 3; break;
+			case 6:  cielo = 3; break;
 			default: cielo++;
 		}
 		break;
