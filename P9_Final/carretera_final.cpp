@@ -188,7 +188,7 @@ void anuncio(float distancia) {
 	quadtex(a3, a0, a1, a2, 0, 1, 0, 1, 10, 10);
 
 
-
+	
 	glPopMatrix();
 
 }
@@ -205,16 +205,16 @@ void circuito() {
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, cD);
 		glMaterialfv(GL_FRONT, GL_SPECULAR, cS);
 		glMaterialf(GL_FRONT, GL_SHININESS, s);
-
+		
 	}
 	else { glColor3f(0, 0, 0); }
 	int l = ancho / 2;
 	for (int i = 1; i <= nQuads; i++) {
 		float detras = 0;
-
-		float inicioPeriodo = ((int)Z - (int)Z % (int)periodo);
-		float punto = inicioPeriodo + (i - 1) * distancia;
-		if (punto < Z) { punto += periodo; }
+		
+		float inicioPeriodo = ((int)Z - (int)Z % (int)periodo) ;
+		float punto = inicioPeriodo + (i - 1) * distancia ;
+		if (punto< Z) { punto += periodo; }
 		float siguiente = punto + distancia;
 
 		float x = funcionCarretera(punto);
@@ -231,20 +231,20 @@ void circuito() {
 		GLfloat v1[3] = { x1 - (n1 * l), 0.0 , siguiente - (-1 * d1 * n1 * l) };
 		GLfloat v2[3] = { x1 + (n1 * l) , 0.0 , siguiente + (-1 * d1 * n1 * l) };
 
-
+		
 		glBindTexture(GL_TEXTURE_2D, textura[1]);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		if(noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
+		
 		//GL_MODULATE/ GL_REPLACE o se puede usar el canal alfa con GL_BLEND
 		if (!noche) { quadtex(v0, v1, v2, v3, 0, -1, 0, -1, 1, 1); }
-		else {
-			if (punto <= Z + 7) { quadtex(v0, v1, v2, v3, 0, -1, 0, -1, 30, 110); }
+		else { 
+			if (punto <= Z+7) { quadtex(v0, v1, v2, v3, 0, -1, 0, -1, 30, 110); }
 			else { quadtex(v0, v1, v2, v3, 0, -1, 0, -1, 2, 2); }
 		}
-
+		
 
 	}
 	glPopMatrix();
@@ -258,9 +258,9 @@ void fondo() {
 		GLfloat cS[] = { 0.0,0.0,0.0,1.0 };
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, cD);
 		glMaterialfv(GL_FRONT, GL_SPECULAR, cS);
-		if (cielo == 4) {
-			GLfloat cE[] = { 0.1,0.1,0.1,1.0 };
-			glMaterialfv(GL_FRONT, GL_EMISSION, cE);
+		if(cielo == 4){
+		GLfloat cE[] = { 0.1,0.1,0.1,1.0 };
+		glMaterialfv(GL_FRONT, GL_EMISSION, cE);
 		}
 	}
 	float nquads = 10;
@@ -287,7 +287,7 @@ void fondo() {
 		if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 		glColor3f(0, 0, 1);
-		quadtex(cil0, cil1, cil2, cil3, 0.25 + (i * alpha) / (2 * PI), 0.25 + ((i + 1.f) * alpha) / (2 * PI), 0, 1, 4, 4);
+		quadtex(cil0, cil1, cil2, cil3, 0.25+(i *alpha) / (2 * PI),0.25 + ((i + 1.f) * alpha) / (2 * PI), 0, 1,4,4);
 		for (int j = 0; j < 3; j++) {
 			cil0[j] = cil1[j];
 			cil3[j] = cil2[j];
@@ -306,7 +306,7 @@ void luzfoco() {
 		GLfloat focoA[] = { 0.2, 0.2, 0.2, 1.0 };
 		GLfloat focoD[] = { 1.00, 1.00, 1.00, 1.0 };
 		GLfloat focoS[] = { 0.3, 0.3, 0.3, 1.0 };
-		GLfloat focoM[] = { 0.0, -0.5, -0.7 };
+		GLfloat focoM[] = { 0.0, -0.5, -0.7 };  
 
 		glLightfv(GL_LIGHT1, GL_AMBIENT, focoA);
 		glLightfv(GL_LIGHT1, GL_DIFFUSE, focoD);
@@ -356,7 +356,7 @@ void luces() {
 			Ponemos las farolas equitativamente respecto la funcion
 			*/
 			float detras = 0;
-			// Casting para poder sacar bien el inico del periodo
+				 // Casting para poder sacar bien el inico del periodo
 			float distanciaFarolas = (periodo / 4.f) * ((float)i - 2.f);
 
 			//if (i == 5) { printf("%.6f\n", distanciaFarolas );  }
@@ -394,7 +394,7 @@ void luces() {
 void ambiente() {
 	glPushMatrix();
 	if (niebla && !noche) {
-
+		
 		glEnable(GL_FOG);
 		GLfloat nieblaD[] = { 0.6875, 0.8046875, 0.9765625, 1.0 };
 		GLfloat nieblaA[] = { 0.6875, 0.8046875, 0.9765625, 1.0 };
@@ -402,17 +402,16 @@ void ambiente() {
 		glFogf(GL_FOG_DENSITY, 0.25);
 	}
 	else if (niebla && noche) {
-
+	
 		glEnable(GL_FOG);
-
-
+	
+	
 		GLfloat nieblaN[] = { 0.0, 0.0, 0.02, 1.0 };
 		glFogfv(GL_FOG_COLOR, nieblaN);
 		glFogf(GL_FOG_DENSITY, 0.15);
-
+	
 	}
-	else {
-		glDisable(GL_FOG);
+	else { glDisable(GL_FOG);
 	}
 	glPopMatrix();
 }
@@ -432,7 +431,7 @@ void display()
 	if (vista) gluLookAt(X, Y, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
 	else gluLookAt(X, Y + 50, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
 
-	if (modoSimple) {
+	if (modoSimple){
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glDisable(GL_LIGHTING);
 		glDisable(GL_TEXTURE_2D);
@@ -440,7 +439,7 @@ void display()
 	else {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glEnable(GL_TEXTURE_2D);				 // esto asegura que se cargan las tecturas otra vez si se ponen modo simple y luego se pasa al texturado
-
+		
 	}
 	ambiente();
 	fondo();
@@ -463,16 +462,7 @@ void reshape(GLint w, GLint h)
 	gluPerspective(45, razon, 1, 200);
 }
 
-int pnpoly(int nvert, float* vertx, float* verty, float testx, float testy)
-{
-	int i, j, c = 0;
-	for (i = 0, j = nvert - 1; i < nvert; j = i++) {
-		if (((verty[i] > testy) != (verty[j] > testy)) &&
-			(testx < (vertx[j] - vertx[i]) * (testy - verty[i]) / (verty[j] - verty[i]) + vertx[i]))
-			c = !c;
-	}
-	return c;
-}
+
 
 #pragma warning(disable : 4996)
 void onTimer(int valor) {
@@ -491,35 +481,8 @@ void onTimer(int valor) {
 	tHora = timeinfo->tm_hour;
 	tMinuto = timeinfo->tm_min;
 	tSegundos = timeinfo->tm_sec;
-	int l = ancho / 2;
-
-	float Zaux = (Z+0.2) +  (sin(angulo * PI / 180) * velocidad * tiempo_transcurrido / 1000.0f);
-	float Xaux =( X) + (cos(angulo * PI / 180) * velocidad * tiempo_transcurrido / 1000.0f);
-
-	float punto = Zaux;
-	float siguiente = punto + distancia;
-	float x = funcionCarretera(punto);
-	float d = derivada(punto);
-	float n = normal(d);
-	float x1 = funcionCarretera(siguiente);
-	float d1 = derivada(siguiente);
-	float n1 = normal(d1);
-
-	GLfloat v0[3] = { x - (n * l), 0.0 , punto - (-1 * d * n * l) };
-	GLfloat v3[3] = { x + (n * l) , 0.0 , punto + (-1 * d * n * l) };
-
-	GLfloat v1[3] = { x1 - (n1 * l), 0.0 , siguiente - (-1 * d1 * n1 * l) };
-	GLfloat v2[3] = { x1 + (n1 * l) , 0.0 , siguiente + (-1 * d1 * n1 * l) };
-
-	float verticesX[4] = { x - (n * l),x1 - (n1 * l) , x1 + (n1 * l) ,x + (n * l) } ;
-	float verticesZ[4] = { punto - (-1 * d * n * l),siguiente - (-1 * d1 * n1 * l) ,siguiente + (-1 * d1 * n1 * l) ,punto + (-1 * d * n * l) };
-	if (pnpoly(4, verticesX, verticesZ,Xaux,Zaux)) {
-		X += Xaux;
-		Z += Zaux;
-	}
-	else {
-		velocidad = 0;
-	}
+	Z += sin(angulo * PI / 180) * velocidad * tiempo_transcurrido / 1000.0f;
+	X += cos(angulo * PI / 180) * velocidad * tiempo_transcurrido / 1000.0f;
 
 	stringstream titulo;
 	titulo << fixed;
@@ -568,8 +531,8 @@ void onKey(unsigned char tecla, int x, int y) {
 	case 'W':
 	case 'w':
 		switch (cielo) {
-		case 6:  cielo = 3; break;
-		default: cielo++;
+			case 6:  cielo = 3; break;
+			default: cielo++;
 		}
 		break;
 	case 27:
