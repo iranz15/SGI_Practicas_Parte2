@@ -473,21 +473,19 @@ void generartexto() {
 }
 void mostrarHUD() {
 	if(HUD){
-		glPushMatrix();
-		glLoadIdentity();
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glLoadIdentity();
-		glOrtho(-1, 1, -1, 1, -1, 1);
-		glMatrixMode(GL_MODELVIEW);
-		gluLookAt(0, 0, 0, 0, 0, -1, 0, 1, 0);
+
+	glPushMatrix();
+	glLoadIdentity();
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(-1, 1, -1, 1);	//(-1,-1) es el punto mas abajo a la izquierda del viewport, (1,1) el maximo a la derecha y (0,0) el centro
+	glMatrixMode(GL_MODELVIEW);
 
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_LIGHTING);
-
-	printf("fdfds");
 	
 	// Habilitamos blending
 	glEnable(GL_BLEND);
@@ -499,8 +497,8 @@ void mostrarHUD() {
 	glColor4f(1, 0, 0.6, 0.7);
 	glBegin(GL_POLYGON);
 	glVertex2f(-1, -1.0);
-	glVertex2f(-0.8, -1.0);
-	glVertex2f(-0.8, -0.95 );
+	glVertex2f(0.0, -1.0);
+	glVertex2f(0.0, -0.95 );
 	glVertex2f(-1.0, -0.95 );
 	glEnd();
 
@@ -546,7 +544,7 @@ void display()
 		
 	}
 	
-	generartexto();
+	
 	ambiente();
 	anuncio(2.f);
 	circuito();
@@ -554,6 +552,7 @@ void display()
 	ejes();
 	circuito();
 	anuncio(2.f); 		//El anuncio se genera a mitad de ampitud de onda
+	generartexto();
 	mostrarHUD();
 	luces();
 	
