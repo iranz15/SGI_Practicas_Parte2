@@ -488,7 +488,7 @@ void mostrarHUD() {
 	// Dibujar traslucidos
 	
 	glPushMatrix();
-	glTranslatef(0, 0, -5);
+	glTranslatef(0, 0, 3);
 	glColor4f(1.0, 0.0, 0.0, 0.3);
 	glutSolidSphere(0.5, 20, 20);
 	glPopMatrix();
@@ -515,7 +515,7 @@ void display()
 
 	if (vista) luzfoco();						 //Vista de pajaro = No se activa el foco
 
-	mostrarHUD();
+	
 	if (vista) gluLookAt(X, Y, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
 	else gluLookAt(X, Y + 50, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
 
@@ -538,6 +538,7 @@ void display()
 	ejes();
 	circuito();
 	anuncio(2.f); 		//El anuncio se genera a mitad de ampitud de onda
+	mostrarHUD();
 	luces();
 	
 	glutSwapBuffers();
