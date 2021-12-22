@@ -54,8 +54,9 @@ static int mirar = 1;		//Constante para controlar la distancia entre la camara y
 static int vista = 1;
 static int noche = 0;
 static int niebla = 0;
-static int HUD = 1;
+static int HUD = 0;
 static int modoSimple = 0;
+static int mensajes = 0;
 static int cielo = 3;
 
 //Lista de variables de textura
@@ -73,6 +74,47 @@ X+    <---------|-------->     -X
 
 */
 
+void textomejorado(unsigned int x, unsigned int y, char* text, const GLfloat* color, void* font, bool WCS)
+{
+	glPushAttrib(GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+
+	glColor3fv(color);
+
+	if (!WCS) {
+		int viewport[4];
+		glGetIntegerv(GL_VIEWPORT, viewport);
+
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		gluOrtho2D(viewport[0], viewport[2], viewport[1], viewport[3]);
+
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+
+		glRasterPos2i(x, y);
+
+		while (*text)
+		{
+			glutBitmapCharacter(font, *text++);
+		}
+		glPopMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
+	}
+	else {
+		glRasterPos2i(x, y);
+		while (*text)
+		{
+			glutBitmapCharacter(font, *text++);
+		}
+	}
+	glEnable(GL_LIGHTING);
+	glPopAttrib();
+}
 
 
 void texturas() {
@@ -416,6 +458,51 @@ void ambiente() {
 	glPopMatrix();
 }
 
+void generartexto() {
+	if (mensajes) {
+	char test[] = "Hola mundhgfhhggffhgo";
+	char hud[] = "HUD Activado";
+	int viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	
+
+	
+	textomejorado(0, 0,test,ROJO, GLUT_BITMAP_TIMES_ROMAN_24,false);
+	if(HUD) textomejorado(0, 10, hud, ROJO, GLUT_BITMAP_TIMES_ROMAN_24, false);
+	}
+}
+void mostrarHUD() {
+	if(HUD){
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_LIGHTING);
+
+	printf("fdfds");
+	
+	// Habilitamos blending
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// Z-Buffer Readonly
+	glDepthMask(GL_FALSE);
+	// Dibujar traslucidos
+	
+	glPushMatrix();
+	glTranslatef(0, 0, -5);
+	glColor4f(1.0, 0.0, 0.0, 0.3);
+	glutSolidSphere(0.5, 20, 20);
+	glPopMatrix();
+	
+	// Z-Buffer a estado normal
+	glDepthMask(GL_TRUE);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_LIGHTING);
+	
+	}
+}
 
 void display()
 {
@@ -428,6 +515,7 @@ void display()
 
 	if (vista) luzfoco();						 //Vista de pajaro = No se activa el foco
 
+	mostrarHUD();
 	if (vista) gluLookAt(X, Y, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
 	else gluLookAt(X, Y + 50, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
 
@@ -441,17 +529,21 @@ void display()
 		glEnable(GL_TEXTURE_2D);				 // esto asegura que se cargan las tecturas otra vez si se ponen modo simple y luego se pasa al texturado
 		
 	}
+	
+	generartexto();
 	ambiente();
+	anuncio(2.f);
+	circuito();
 	fondo();
 	ejes();
 	circuito();
 	anuncio(2.f); 		//El anuncio se genera a mitad de ampitud de onda
 	luces();
+	
 	glutSwapBuffers();
 
 
 }
-
 
 void reshape(GLint w, GLint h)
 {
@@ -460,6 +552,7 @@ void reshape(GLint w, GLint h)
 	glLoadIdentity();
 	float razon = (float)w / h;
 	gluPerspective(45, razon, 1, 200);
+
 }
 
 
@@ -490,7 +583,7 @@ void onTimer(int valor) {
 	titulo << velocidad << "m/s";
 	glutSetWindowTitle(titulo.str().c_str());
 	glutSetWindowTitle(titulo.str().c_str());
-
+	
 	glutTimerFunc(1000 / tasaFPS, onTimer, tasaFPS);
 	glutPostRedisplay();
 }
@@ -499,6 +592,11 @@ void onKey(unsigned char tecla, int x, int y) {
 
 	switch (tecla) {
 
+	case 'T':
+	case 't':
+		if (mensajes) mensajes = 0;
+		else mensajes = 1;
+		break;
 	case 'S':
 	case 's':
 		if (modoSimple) modoSimple = 0;
@@ -575,7 +673,9 @@ void main(int argc, char** argv) {
 	FreeImage_Initialise();
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-	glutInitWindowSize(1000, 1000);
+	glutInitWindowSize(900, 900);
+	glutInitWindowPosition(100, 100);
+
 	glutCreateWindow(PROYECTO);
 	init();
 	std::cout << PROYECTO << " \nA conducir!" << std::endl;
