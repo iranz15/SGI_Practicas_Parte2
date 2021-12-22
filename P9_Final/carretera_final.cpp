@@ -473,6 +473,15 @@ void generartexto() {
 }
 void mostrarHUD() {
 	if(HUD){
+		glPushMatrix();
+		glLoadIdentity();
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		glOrtho(-1, 1, -1, 1, -1, 1);
+		glMatrixMode(GL_MODELVIEW);
+		gluLookAt(0, 0, 0, 0, 0, -1, 0, 1, 0);
+
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	glDisable(GL_TEXTURE_2D);
@@ -487,12 +496,14 @@ void mostrarHUD() {
 	glDepthMask(GL_FALSE);
 	// Dibujar traslucidos
 	
-	glPushMatrix();
-	glTranslatef(0, 0, 3);
-	glColor4f(1.0, 0.0, 0.0, 0.3);
-	glutSolidSphere(0.5, 20, 20);
-	glPopMatrix();
-	
+	glColor4f(1, 0, 0.6, 0.7);
+	glBegin(GL_POLYGON);
+	glVertex2f(-1, -1.0);
+	glVertex2f(-0.8, -1.0);
+	glVertex2f(-0.8, -0.95 );
+	glVertex2f(-1.0, -0.95 );
+	glEnd();
+
 	// Z-Buffer a estado normal
 	glDepthMask(GL_TRUE);
 	glDisable(GL_CULL_FACE);
@@ -500,6 +511,11 @@ void mostrarHUD() {
 
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_LIGHTING);
+
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
 	
 	}
 }
