@@ -8,15 +8,20 @@
 
 #define PROYECTO " - Jorge Iranzo"
  //#define _USE_MATH_DEFINES
-
 #include <iostream>		
 #include <sstream>
 #include <cmath>
 #include <ctime>
 #include <freeglut.h>
 #include <Utilidades.h>
+#include <irrKlang.h>
 
+#pragma comment(lib, "irrKlang.lib")
 
+using namespace irrklang;	
+
+ISoundEngine* engine;
+ISound* cancionfondo;
 
 static const int tasaFPS = 60;
 static float coef[16];    // Matriz MODELVIEW
@@ -117,6 +122,7 @@ void textomejorado(unsigned int x, unsigned int y, char* text, const GLfloat* co
 }
 
 
+
 void texturas() {
 
 	//Carretera
@@ -144,10 +150,13 @@ void texturas() {
 	glBindTexture(GL_TEXTURE_2D, textura[5]);
 	loadImageFile((char*)"estrellas_fondo.png");
 
-
 	glGenTextures(1, &textura[6]);
 	glBindTexture(GL_TEXTURE_2D, textura[6]);
 	loadImageFile((char*)"luna_fondo_2.jpg");
+
+	glGenTextures(1, &textura[7]);
+	glBindTexture(GL_TEXTURE_2D, textura[7]);
+	loadImageFile((char*)"postes.png");
 }
 
 
@@ -160,9 +169,11 @@ void init()
 	glEnable(GL_NORMALIZE);			//Normalizacion vectores iluminacion
 	texturas();						//Carga todas las texturas. NO se puede poner en el display
 									//porque si no estaria cargando las texturas cada frame y va lentisimo
+	engine = createIrrKlangDevice();   //Creamos el controlador de sonido
+	cancionfondo= engine->play2D("./Rainbow_Road_DS_Song.mp3", true,false,true);
+	cancionfondo->setVolume(0.5);
+	
 }
-
-
 
 float funcionCarretera(float punto) {
 
@@ -200,9 +211,29 @@ void anuncio(float distancia) {
 	GLfloat v0[3] = { x - (n * l), 0.0 , distanciaAnuncio - (-1 * d * n * l) };
 	GLfloat v3[3] = { x + (n * l) , 0.0 , distanciaAnuncio + (-1 * d * n * l) };
 	GLfloat a0[3] = { v0[0], 2, v0[2] };
-	GLfloat a1[3] = { v0[0], 3 , v0[2] };
+	GLfloat a1[3] = { v0[0], 3 ,v0[2] };
 	GLfloat a2[3] = { v3[0], 3, v3[2] };
 	GLfloat a3[3] = { v3[0], 2, v3[2] };
+
+	GLUquadric* poste = gluNewQuadric();
+	gluQuadricTexture(poste, GL_TRUE);
+	glBindTexture(GL_TEXTURE_2D, textura[7]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	glPushMatrix();
+	glTranslatef(a0[0]+0.12, 0, a0[2]);
+	glRotatef(90, -1, 0, 0);
+	gluCylinder(poste,0.15,0.15,3,5,1);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(a3[0]-0.12, 0, a3[2]);
+	glRotatef(90, -1, 0, 0);
+	gluCylinder(poste, 0.15, 0.15, 3, 5, 1);
+	glPopMatrix();
+
 
 	glBindTexture(GL_TEXTURE_2D, textura[2]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -546,12 +577,11 @@ void display()
 	
 	
 	ambiente();
-	anuncio(2.f);
+	anuncio(2.f); //El anuncio se genera a mitad de ampitud de onda
 	circuito();
 	fondo();
 	ejes();
-	circuito();
-	anuncio(2.f); 		//El anuncio se genera a mitad de ampitud de onda
+	circuito(); 		
 	generartexto();
 	mostrarHUD();
 	luces();
@@ -650,6 +680,7 @@ void onKey(unsigned char tecla, int x, int y) {
 		}
 		break;
 	case 27:
+		
 		exit(0);
 
 	}
