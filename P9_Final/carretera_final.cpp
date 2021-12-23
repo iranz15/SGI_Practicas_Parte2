@@ -129,34 +129,34 @@ void texturas() {
 	glEnable(GL_TEXTURE_2D);
 	glGenTextures(1, &textura[1]);
 	glBindTexture(GL_TEXTURE_2D, textura[1]);
-	loadImageFile((char*)"mario_kart_road.png");
+	loadImageFile((char*)"./texturas/mario_kart_road.png");
 
 	//Anuncio
 	glGenTextures(1, &textura[2]);
 	glBindTexture(GL_TEXTURE_2D, textura[2]);
-	loadImageFile((char*)"anuncio_kirby.png");
+	loadImageFile((char*)"./texturas/anuncio_kirby.png");
 
 	//Fondo 1
 	glGenTextures(1, &textura[3]);
 	glBindTexture(GL_TEXTURE_2D, textura[3]);
-	loadImageFile((char*)"rainbow_road_fondo.jpg");
+	loadImageFile((char*)"./texturas/rainbow_road_fondo.jpg");
 
 	//Fondo 2
 	glGenTextures(1, &textura[4]);
 	glBindTexture(GL_TEXTURE_2D, textura[4]);
-	loadImageFile((char*)"agujero_fondo.jpg");
+	loadImageFile((char*)"./texturas/agujero_fondo.jpg");
 
 	glGenTextures(1, &textura[5]);
 	glBindTexture(GL_TEXTURE_2D, textura[5]);
-	loadImageFile((char*)"estrellas_fondo.png");
+	loadImageFile((char*)"./texturas/estrellas_fondo.png");
 
 	glGenTextures(1, &textura[6]);
 	glBindTexture(GL_TEXTURE_2D, textura[6]);
-	loadImageFile((char*)"luna_fondo_2.jpg");
+	loadImageFile((char*)"./texturas/luna_fondo_2.jpg");
 
 	glGenTextures(1, &textura[7]);
 	glBindTexture(GL_TEXTURE_2D, textura[7]);
-	loadImageFile((char*)"postes.png");
+	loadImageFile((char*)"./texturas/postes.png");
 }
 
 
@@ -170,8 +170,8 @@ void init()
 	texturas();						//Carga todas las texturas. NO se puede poner en el display
 									//porque si no estaria cargando las texturas cada frame y va lentisimo
 	engine = createIrrKlangDevice();   //Creamos el controlador de sonido
-	cancionfondo= engine->play2D("./Rainbow_Road_DS_Song.mp3", true,false,true);
-	cancionfondo->setVolume(0.5);
+	cancionfondo= engine->play2D("./sonidos/Rainbow_Road_DS_Song.mp3", true,false,true);
+	cancionfondo->setVolume(0.1);
 	
 }
 
