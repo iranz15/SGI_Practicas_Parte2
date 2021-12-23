@@ -87,6 +87,7 @@ void textomejorado(unsigned int x, unsigned int y, char* text, const GLfloat* co
 	
 	glPushAttrib(GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
+	glDisable(GL_TEXTURE_2D);
 	glColor3fv(color);
 
 	if (!WCS) {
@@ -121,6 +122,7 @@ void textomejorado(unsigned int x, unsigned int y, char* text, const GLfloat* co
 		}
 	}
 	glEnable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);
 	glPopAttrib();
 	
 }
@@ -691,9 +693,10 @@ void display()
 	ejes();
 	circuito();
 	estrella(1.f);
+	luces();
 	generartexto();
 	mostrarHUD();
-	luces();
+	
 	
 	glutSwapBuffers();
 
