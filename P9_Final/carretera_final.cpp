@@ -6,7 +6,7 @@
  */
 
 
-#define PROYECTO "Practica P9 Conduccion - Jorge Iranzo"
+#define PROYECTO "Practica P9 Conduccion - Creado por Jorge Iranzo Sanchez"
  //#define _USE_MATH_DEFINES
 #include <iostream>		
 #include <sstream>
@@ -56,7 +56,7 @@ static int mirar = 1;		//Constante para controlar la distancia entre la camara y
 static int modoVista = 1;
 static int noche = 0;
 static int niebla = 0;
-static int HUD = 0;
+static int HUD = 1;
 static int modoSimple = 0;
 static int mensajes = 0;
 static int cielo = 3;
@@ -161,6 +161,10 @@ void texturas() {
 	glGenTextures(1, &textura[7]);
 	glBindTexture(GL_TEXTURE_2D, textura[7]);
 	loadImageFile((char*)"./texturas/postes.png");
+
+	glGenTextures(1, &textura[8]);
+	glBindTexture(GL_TEXTURE_2D, textura[8]);
+	loadImageFile((char*)"./texturas/rainbow_road_circle_star.png");
 }
 
 
@@ -188,11 +192,12 @@ void init()
 	std::cout << "C/c: Cambia la visibilidad de elementos solidarios a la cámara -HUD-. El HUD contiene informacion acerca de \nla velocidad actual, el norte (eje -Z) y otros modos implementados \n";
 	std::cout << "---------------------\n";
 	std::cout << "MEJORAS/CONTROLES AVANZADOS:\n";
-	std::cout << "T/t: Activa/desactiva mensajes de ayuda que indican que modos estan activos. Solo se puede activar si C/c tambien lo esta. \n";
+	std::cout << "T/t: Activa/desactiva mensajes de ayuda que indican que modos estan activos. ( Estos mensajes no consideramos que son parte del HUD,\n por lo que C/c no afecta a este opcion ) \n";
 	std::cout << "V/v: Activa/desactiva una vista de aguila para ver el circuito desde arriba. Se desactiva el movimiento mediante flechas en este modo \n";
 	std::cout << "W/w: Cambia la textura de fondo del cielo entre una seleccion de imagenes \n";
 	std::cout << "M/m: Activa/desactiva la musica y los sonidos \n";
 	std::cout << "K/k: Si estan activos los sonidos (M/m) cambia la cancion actual entre una seleccion de canciones \n";
+	std::cout << "R/r: Reseta y pone los valores predeterminados de los modos descritos previamente (visual y sonoro) \n";
 
 }
 
@@ -281,10 +286,33 @@ void anuncio(float distancia) {
 	gluCylinder(poste, 0.15, 0.15, 3, 5, 1);
 	glPopMatrix();
 	
+
 	glPopMatrix();
 
 }
+void estrella() {
 
+	GLUquadric* estrCirc = gluNewQuadric();
+	glPushMatrix();
+	gluQuadricOrientation(estrCirc, GLU_INSIDE);
+	gluQuadricTexture(estrCirc, GL_TRUE);
+	glEnable(GL_BLEND);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBindTexture(GL_TEXTURE_2D, textura[8]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	glTranslatef(7, -2, 10);
+	gluDisk(estrCirc, 0, 8, 6, 1);
+	glDepthMask(GL_TRUE);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+	glPopMatrix();
+
+}
 void circuito() {
 	glPushMatrix();
 	if (noche & !modoSimple) {
@@ -510,20 +538,24 @@ void ambiente() {
 }
 
 void generartexto() {
-	if (mensajes && HUD) {
+	if (mensajes) {
 	char separador[] = "-----------------";
 	char ayuda[] = "Mensajes de ayuda";
-	char hud[] = "HUD Activado";
+	char hud[] = "HUD: ON";
+	char textNoche[] = "Modo Noche: ON";
+	char textNiebla[] = "Niebla: ON";
+	char textAguila[] = "Aguila: ON";
+	char textAlambrico[] = "Alambrico: ON";
 	int viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
-	textomejorado(0, 3, ayuda, BLANCO, GLUT_BITMAP_9_BY_15, false);
-	textomejorado(0, 18, separador, BLANCO, GLUT_BITMAP_9_BY_15,false);
-	if(HUD) textomejorado(0, 48, hud, BLANCO, GLUT_BITMAP_9_BY_15, false);
+	textomejorado(0, 3, ayuda, ROJO, GLUT_BITMAP_9_BY_15, false);
+	textomejorado(0, 18, separador, ROJO, GLUT_BITMAP_9_BY_15,false);
+	if(HUD) textomejorado(0, 48, hud, ROJO, GLUT_BITMAP_9_BY_15, false);
 	}
 }
 void mostrarHUD() {
 	if(HUD){
-
+	
 	glPushMatrix();
 	glLoadIdentity();
 	glMatrixMode(GL_PROJECTION);
@@ -549,12 +581,13 @@ void mostrarHUD() {
 	
 	// Control Velocidad
 	glPushMatrix();
-	glColor4f(1, 0, 0.6, 0.7);
+	glColor4f(1, 0, 0.0, 0.7);
 	glBegin(GL_POLYGON);
-	glVertex2f(-1, -1.0);
-	glVertex2f(0.0, -1.0);
-	glVertex2f(0.0, -0.95 );
-	glVertex2f(-1.0, -0.95 );
+	glVertex2f(0.90, -0.95);
+	glVertex2f(0.90, -1.00);
+	glVertex2f(1.00, -1.00);
+	glVertex2f(1.00, -0.95);
+
 	glEnd();
 	glPopMatrix();
 
@@ -642,7 +675,8 @@ void display()
 	circuito();
 	fondo();
 	ejes();
-	circuito(); 		
+	circuito();
+	estrella();
 	generartexto();
 	mostrarHUD();
 	luces();
@@ -694,7 +728,18 @@ void onTimer(int valor) {
 	glutTimerFunc(1000 / tasaFPS, onTimer, tasaFPS);
 	glutPostRedisplay();
 }
-
+void reset() {
+	modoVista = 1;
+	noche = 0;
+	niebla = 0;
+	HUD = 1;
+	modoSimple = 0;
+	mensajes = 0;
+	cielo = 3;
+	sonido = 1;
+	idcancionActual = totalcanciones - 1;
+	cambiarMusica();
+}
 void onKey(unsigned char tecla, int x, int y) {
 
 	switch (tecla) {
@@ -747,6 +792,10 @@ void onKey(unsigned char tecla, int x, int y) {
 			case 6:  cielo = 3; break;
 			default: cielo++;
 		}
+		break;
+	case 'R':
+	case 'r':
+		reset();
 		break;
 	case 27:
 		
