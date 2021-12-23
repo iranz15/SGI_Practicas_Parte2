@@ -304,17 +304,23 @@ void estrella(float distancia) {
 	float x = funcionCarretera(distanciaAnuncio);
 	float d = derivada(distanciaAnuncio);
 	float n = normal(d);
+	float vTang[3] = { d * n,0.f, n };
+	//std::cout << vTang[0] << "\n";
+	//std::cout << vTang[2] << "\n";
+	float vEstr[3] = { 0.f,0.f,1.f };
+	float anguloGiro = deg(acos(rad( ((vTang[0] * vEstr[0]) + (vTang[2] * vEstr[2])) / ( sqrtf(powf(vTang[0],2) + powf(vTang[2],2)) * sqrtf(powf(vEstr[0],2) + powf(vEstr[2],2) ) ) ) ));
+	std::cout << anguloGiro << "\n";
 
 	GLfloat v0[3] = { x - (n * l), 0.0 , distanciaAnuncio - (-1 * d * n * l) };
-	GLfloat v3[3] = { x + (n * l) , 0.0 , distanciaAnuncio + (-1 * d * n * l) };
+	GLfloat v3[3] = { x + (n ) , 0.0 , distanciaAnuncio + (-1 * d * n ) };
 	GLfloat a0[3] = { v0[0], 2, v0[2] };
 	GLfloat a1[3] = { v0[0], 3 ,v0[2] };
 	GLfloat a2[3] = { v3[0], 3, v3[2] };
 	GLfloat a3[3] = { v3[0], 2, v3[2] };
 
-	GLUquadric* estrCirc = gluNewQuadric();
 	glPushMatrix();
-	gluQuadricOrientation(estrCirc, GLU_INSIDE);
+	GLUquadric* estrCirc = gluNewQuadric();
+	// gluQuadricOrientation(estrCirc, GLU_INSIDE);
 	gluQuadricTexture(estrCirc, GL_TRUE);
 	glEnable(GL_BLEND);
 	//glEnable(GL_CULL_FACE);
@@ -325,7 +331,9 @@ void estrella(float distancia) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	glTranslatef(a3[0] - 0.12, 0, a3[2]);
+	
+	glTranslatef(a3[0]  , 0, a3[2]);
+	glRotatef(anguloGiro, 0.0, 1.0, 0.0);
 	gluDisk(estrCirc, 0, 6, 15, 1);
 	//glDepthMask(GL_TRUE);
 	//glDisable(GL_CULL_FACE);
@@ -689,12 +697,12 @@ void display()
 
 	
 	ambiente();
-	anuncio(2.f); //El anuncio se genera a mitad de ampitud de onda
+	// anuncio(2.f); //El anuncio se genera a mitad de ampitud de onda
 	circuito();
 	fondo();
 	ejes();
 	circuito();
-	estrella(1.f);
+	estrella(4.f);
 	generartexto();
 	mostrarHUD();
 	luces();
