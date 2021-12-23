@@ -6,7 +6,7 @@
  */
 
 
-#define PROYECTO " - Jorge Iranzo"
+#define PROYECTO "Practica P9 Conduccion - Jorge Iranzo"
  //#define _USE_MATH_DEFINES
 #include <iostream>		
 #include <sstream>
@@ -23,16 +23,13 @@ using namespace irrklang;
 ISoundEngine* engine;
 ISound* cancionfondo;
 
+
 static const int tasaFPS = 60;
-static float coef[16];    // Matriz MODELVIEW
 
 //Constantes para guardar la hora actual del sistema
 static float tHora;
 static float tMinuto;
 static float tSegundos;
-
-
-static float velocidadEsfera[] = { 100.0, 60.0 };
 
 //Inicializacion de la posicion de la camara
 static float X = 0;
@@ -54,18 +51,24 @@ static float velocidad = 0.0;
 static int mirar = 1;		//Constante para controlar la distancia entre la camara y el punto que esta mirando. Se ha escogido de forma arbitraria
 
 
-//Flags de control
+//Flags de control y valores por defecto
 //Vista normal = 1/ Vista pajaro = 0
-static int vista = 1;
+static int modoVista = 1;
 static int noche = 0;
 static int niebla = 0;
 static int HUD = 0;
 static int modoSimple = 0;
 static int mensajes = 0;
 static int cielo = 3;
+static int sonido = 1;
 
 //Lista de variables de textura
 GLuint textura[10];
+
+//Lista de variables de textura
+int totalcanciones = 2;
+static int idcancionActual = 0;
+static float auxVolumen = 0.f;
 
 
 /*		Vista de pajaro
@@ -81,9 +84,9 @@ X+    <---------|-------->     -X
 
 void textomejorado(unsigned int x, unsigned int y, char* text, const GLfloat* color, void* font, bool WCS)
 {
+	
 	glPushAttrib(GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
-
 	glColor3fv(color);
 
 	if (!WCS) {
@@ -119,6 +122,7 @@ void textomejorado(unsigned int x, unsigned int y, char* text, const GLfloat* co
 	}
 	glEnable(GL_LIGHTING);
 	glPopAttrib();
+	
 }
 
 
@@ -170,9 +174,26 @@ void init()
 	texturas();						//Carga todas las texturas. NO se puede poner en el display
 									//porque si no estaria cargando las texturas cada frame y va lentisimo
 	engine = createIrrKlangDevice();   //Creamos el controlador de sonido
-	cancionfondo= engine->play2D("./sonidos/Rainbow_Road_DS_Song.mp3", true,false,true);
-	cancionfondo->setVolume(0.1);
-	
+	//Cancion Base
+	cancionfondo = engine->play2D("./sonidos/Rainbow_Road_DS_Song_00.mp3", true, false, true);
+	cancionfondo->setVolume(0.3);
+
+	std::cout << PROYECTO << "\n---------------------\nBienvenido a la Senda Arcoiris!\n\n";
+	std::cout << "CONTROLES BASICOS:\n";
+	std::cout << "Flecha izquierda / derecha: giro del vehiculo \n";
+	std::cout << "Flecha arriba/abajo: aumento/disminucion de la velocidad \n";
+	std::cout << "S/s: Activa/desactiva un modelo simple en alambrico sin luces ni texturas \n";
+	std::cout << "L/l: Cambia entre modo diurno/nocturno \n";
+	std::cout << "N/n: Cambia el estado de la niebla (on/off). Varia si L/l esta activado \n";
+	std::cout << "C/c: Cambia la visibilidad de elementos solidarios a la cámara -HUD-. El HUD contiene informacion acerca de \nla velocidad actual, el norte (eje -Z) y otros modos implementados \n";
+	std::cout << "---------------------\n";
+	std::cout << "MEJORAS/CONTROLES AVANZADOS:\n";
+	std::cout << "T/t: Activa/desactiva mensajes de ayuda que indican que modos estan activos. Solo se puede activar si C/c tambien lo esta. \n";
+	std::cout << "V/v: Activa/desactiva una vista de aguila para ver el circuito desde arriba. Se desactiva el movimiento mediante flechas en este modo \n";
+	std::cout << "W/w: Cambia la textura de fondo del cielo entre una seleccion de imagenes \n";
+	std::cout << "M/m: Activa/desactiva la musica y los sonidos \n";
+	std::cout << "K/k: Si estan activos los sonidos (M/m) cambia la cancion actual entre una seleccion de canciones \n";
+
 }
 
 float funcionCarretera(float punto) {
@@ -196,6 +217,7 @@ float derivada(float punto) {
 
 void anuncio(float distancia) {
 	glPushMatrix();
+	glColor3f(0, 0, 0);
 	float detras = 0;
 	int l = ancho / 2;
 	float inicioPeriodo = (int)Z - (int)Z % (int)periodo;
@@ -214,26 +236,6 @@ void anuncio(float distancia) {
 	GLfloat a1[3] = { v0[0], 3 ,v0[2] };
 	GLfloat a2[3] = { v3[0], 3, v3[2] };
 	GLfloat a3[3] = { v3[0], 2, v3[2] };
-
-	GLUquadric* poste = gluNewQuadric();
-	gluQuadricTexture(poste, GL_TRUE);
-	glBindTexture(GL_TEXTURE_2D, textura[7]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	glPushMatrix();
-	glTranslatef(a0[0]+0.12, 0, a0[2]);
-	glRotatef(90, -1, 0, 0);
-	gluCylinder(poste,0.15,0.15,3,5,1);
-	glPopMatrix();
-
-	glPushMatrix();
-	glTranslatef(a3[0]-0.12, 0, a3[2]);
-	glRotatef(90, -1, 0, 0);
-	gluCylinder(poste, 0.15, 0.15, 3, 5, 1);
-	glPopMatrix();
-
 
 	glBindTexture(GL_TEXTURE_2D, textura[2]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -260,7 +262,24 @@ void anuncio(float distancia) {
 
 	quadtex(a3, a0, a1, a2, 0, 1, 0, 1, 10, 10);
 
-
+	//Dibujamos los postes
+	GLUquadric* poste = gluNewQuadric();
+	gluQuadricTexture(poste, GL_TRUE);
+	glBindTexture(GL_TEXTURE_2D, textura[7]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	glPushMatrix();
+	glTranslatef(a0[0] + 0.12, 0, a0[2]);
+	glRotatef(90, -1, 0, 0);
+	gluCylinder(poste, 0.15, 0.15, 3, 5, 1);
+	glPopMatrix();
+	glPushMatrix();
+	glTranslatef(a3[0] - 0.12, 0, a3[2]);
+	glRotatef(90, -1, 0, 0);
+	gluCylinder(poste, 0.15, 0.15, 3, 5, 1);
+	glPopMatrix();
 	
 	glPopMatrix();
 
@@ -359,7 +378,7 @@ void fondo() {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-		glColor3f(0, 0, 1);
+		glColor3f(0, 0, 0);
 		quadtex(cil0, cil1, cil2, cil3, 0.25+(i *alpha) / (2 * PI),0.25 + ((i + 1.f) * alpha) / (2 * PI), 0, 1,4,4);
 		for (int j = 0; j < 3; j++) {
 			cil0[j] = cil1[j];
@@ -372,14 +391,15 @@ void fondo() {
 void luzfoco() {
 
 	//Cheatsheet luces: https://i.gyazo.com/08d9da01d2b54086b40d41097cb25e75.png
-
-	if (noche) {
+	
+	if (noche ) {
+		if(modoVista){
 		//glPushMatrix();
 		GLfloat focoP[] = { 0, 0.7, 0, 1.0 };
 		GLfloat focoA[] = { 0.2, 0.2, 0.2, 1.0 };
 		GLfloat focoD[] = { 1.00, 1.00, 1.00, 1.0 };
 		GLfloat focoS[] = { 0.3, 0.3, 0.3, 1.0 };
-		GLfloat focoM[] = { 0.0, -0.5, -0.7 };  
+		GLfloat focoM[] = { 0.0, -0.5, -0.7 };
 
 		glLightfv(GL_LIGHT1, GL_AMBIENT, focoA);
 		glLightfv(GL_LIGHT1, GL_DIFFUSE, focoD);
@@ -394,11 +414,14 @@ void luzfoco() {
 		glEnable(GL_LIGHT1);
 		glEnable(GL_LIGHTING);
 		//glPopMatrix();
+		}
+		else { glDisable(GL_LIGHT1); }
+		
 	}
 	else {
-		glDisable(GL_LIGHT1);
 		glDisable(GL_LIGHTING);
 	}
+	
 }
 
 
@@ -470,15 +493,12 @@ void ambiente() {
 		
 		glEnable(GL_FOG);
 		GLfloat nieblaD[] = { 0.6875, 0.8046875, 0.9765625, 1.0 };
-		GLfloat nieblaA[] = { 0.6875, 0.8046875, 0.9765625, 1.0 };
 		glFogfv(GL_FOG_COLOR, nieblaD);
 		glFogf(GL_FOG_DENSITY, 0.25);
 	}
 	else if (niebla && noche) {
 	
 		glEnable(GL_FOG);
-	
-	
 		GLfloat nieblaN[] = { 0.0, 0.0, 0.02, 1.0 };
 		glFogfv(GL_FOG_COLOR, nieblaN);
 		glFogf(GL_FOG_DENSITY, 0.15);
@@ -490,16 +510,15 @@ void ambiente() {
 }
 
 void generartexto() {
-	if (mensajes) {
-	char test[] = "Hola mundhgfhhggffhgo";
+	if (mensajes && HUD) {
+	char separador[] = "-----------------";
+	char ayuda[] = "Mensajes de ayuda";
 	char hud[] = "HUD Activado";
 	int viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
-	
-
-	
-	textomejorado(0, 0,test,ROJO, GLUT_BITMAP_TIMES_ROMAN_24,false);
-	if(HUD) textomejorado(0, 10, hud, ROJO, GLUT_BITMAP_TIMES_ROMAN_24, false);
+	textomejorado(0, 3, ayuda, BLANCO, GLUT_BITMAP_9_BY_15, false);
+	textomejorado(0, 18, separador, BLANCO, GLUT_BITMAP_9_BY_15,false);
+	if(HUD) textomejorado(0, 48, hud, BLANCO, GLUT_BITMAP_9_BY_15, false);
 	}
 }
 void mostrarHUD() {
@@ -523,8 +542,13 @@ void mostrarHUD() {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	// Z-Buffer Readonly
 	glDepthMask(GL_FALSE);
-	// Dibujar traslucidos
+
+	// Test
+
 	
+	
+	// Control Velocidad
+	glPushMatrix();
 	glColor4f(1, 0, 0.6, 0.7);
 	glBegin(GL_POLYGON);
 	glVertex2f(-1, -1.0);
@@ -532,6 +556,7 @@ void mostrarHUD() {
 	glVertex2f(0.0, -0.95 );
 	glVertex2f(-1.0, -0.95 );
 	glEnd();
+	glPopMatrix();
 
 	// Z-Buffer a estado normal
 	glDepthMask(GL_TRUE);
@@ -548,7 +573,44 @@ void mostrarHUD() {
 	
 	}
 }
+void activarMusica() {
 
+	if(sonido) {
+		sonido = 0;
+		auxVolumen = cancionfondo->getVolume();  //Nos guardamos el volumen de la cancion ...
+		cancionfondo->setVolume(0.0); 
+		/*En vez de llamar a engine->stopAllSounds(); silenciamos la musica
+		para que si la volvemos a activar, la cancion no vuelva a empezar desde el principio*/
+	}
+	else if (!sonido) {
+		sonido = 1;
+		cancionfondo->setVolume(auxVolumen);
+		
+	}
+
+}
+
+void cambiarMusica() {
+	//Solo se cambia de canción si hay musica
+	if (sonido) {
+		engine->stopAllSounds();
+		cancionfondo->drop();	//Libera memoria
+		idcancionActual++;
+		if (idcancionActual == totalcanciones) { idcancionActual = 0; }
+			switch (idcancionActual) {
+			case 0:
+				cancionfondo = engine->play2D("./sonidos/Rainbow_Road_DS_Song_00.mp3", true, false, true);
+				cancionfondo->setVolume(0.3);
+				break;
+			case 1:
+				cancionfondo = engine->play2D("./sonidos/Kirby_Water_Song_Air_Ride_01.mp3", true, false, true);
+				cancionfondo->setVolume(0.5);
+				break;
+			}
+		
+		}
+
+}
 void display()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -558,11 +620,10 @@ void display()
 	if (noche && !modoSimple) glClearColor(0.0, 0.0, 0.0, 1.0); //Fondo negro
 	else glClearColor(1.0, 1.0, 1.0, 1.0);		 //Fondo blanco
 
-	if (vista) luzfoco();						 //Vista de pajaro = No se activa el foco
+	luzfoco();									//Aqui para que sea adyacente a la camara
 
-	
-	if (vista) gluLookAt(X, Y, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
-	else gluLookAt(X, Y + 50, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, vista, 1 - vista);
+	if (modoVista) { gluLookAt(X, Y, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, modoVista, 1 - modoVista);}
+	else gluLookAt(X, Y + 50, Z-30, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180)+30 , 0, modoVista, 1 - modoVista);
 
 	if (modoSimple){
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -574,7 +635,7 @@ void display()
 		glEnable(GL_TEXTURE_2D);				 // esto asegura que se cargan las tecturas otra vez si se ponen modo simple y luego se pasa al texturado
 		
 	}
-	
+
 	
 	ambiente();
 	anuncio(2.f); //El anuncio se genera a mitad de ampitud de onda
@@ -650,9 +711,9 @@ void onKey(unsigned char tecla, int x, int y) {
 		break;
 	case 'V':
 	case 'v':
-		if (vista)
-			vista = 0;
-		else vista = 1;
+		if (modoVista)
+			modoVista = 0;
+		else modoVista = 1;
 		break;
 	case 'L':
 	case 'l':
@@ -665,6 +726,14 @@ void onKey(unsigned char tecla, int x, int y) {
 		if (niebla)
 			niebla = 0;
 		else niebla = 1;
+		break;
+	case 'M':
+	case 'm':
+		activarMusica();
+		break;
+	case 'K':
+	case 'k':
+		cambiarMusica();
 		break;
 	case 'C':
 	case 'c':
@@ -691,7 +760,7 @@ void onKey(unsigned char tecla, int x, int y) {
 
 
 void onSpecialKey(int specialKey, int x, int y) {
-
+	if(modoVista){
 	switch (specialKey) {
 
 	case GLUT_KEY_UP:
@@ -709,7 +778,7 @@ void onSpecialKey(int specialKey, int x, int y) {
 		angulo += ratioGiro;
 		break;
 	}
-
+	}
 	glutPostRedisplay();
 }
 
@@ -725,7 +794,6 @@ void main(int argc, char** argv) {
 
 	glutCreateWindow(PROYECTO);
 	init();
-	std::cout << PROYECTO << " \nA conducir!" << std::endl;
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(onKey);
