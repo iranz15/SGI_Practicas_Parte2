@@ -38,8 +38,8 @@ static float Z = 0;
 
 //Variables de generacion de la carretera
 static float amplitud = 8;
-static float periodo = 70;
-static int nQuads = 70;
+static float periodo = 90;
+static int nQuads = 90;
 static int ancho = 4;
 static int distancia = 1;
 static float threshold = 10;
@@ -50,6 +50,9 @@ static float angulo = 90.0; //IMPORTANTE: Se genera la carretera hacia el eje +Z
 static float velocidad = 0.0;
 static int mirar = 1;		//Constante para controlar la distancia entre la camara y el punto que esta mirando. Se ha escogido de forma arbitraria
 
+//Angulo de giro estrella. Se declara para que sea dependiente de la velocidad de proceso del computador. Giro de 30 grados de base
+static float anguloEstrella;
+static float velocidadEstrella = 10.0;
 
 //Flags de control y valores por defecto
 //Vista normal = 1/ Vista pajaro = 0
@@ -63,7 +66,7 @@ static int cielo = 3;
 static int sonido = 1;
 
 //Lista de variables de textura
-GLuint textura[10];
+GLuint textura[11];
 
 //Lista de variables de textura
 int totalcanciones = 2;
@@ -167,6 +170,15 @@ void texturas() {
 	glGenTextures(1, &textura[8]);
 	glBindTexture(GL_TEXTURE_2D, textura[8]);
 	loadImageFile((char*)"./texturas/rainbow_road_circle_star.png");
+
+	glGenTextures(1, &textura[9]);
+	glBindTexture(GL_TEXTURE_2D, textura[9]);
+	loadImageFile((char*)"./texturas/tierra_textura.jpg");
+
+
+	glGenTextures(1, &textura[10]);
+	glBindTexture(GL_TEXTURE_2D, textura[10]);
+	loadImageFile((char*)"./texturas/textura_jupiter.png");
 }
 
 
@@ -260,7 +272,7 @@ void anuncio(float distancia) {
 		glLightfv(GL_LIGHT6, GL_SPOT_DIRECTION, lM);
 		glLightf(GL_LIGHT6, GL_SPOT_CUTOFF, 40.0);
 		glLightf(GL_LIGHT6, GL_SPOT_EXPONENT, 25.0);
-		glLightf(GL_LIGHT6, GL_QUADRATIC_ATTENUATION, 0.03);
+		//glLightf(GL_LIGHT6, GL_QUADRATIC_ATTENUATION, 0.03);
 		
 		glEnable(GL_LIGHT6);
 	}
@@ -295,12 +307,10 @@ void anuncio(float distancia) {
 
 }
 void estrella(float distancia) {
-	
-	glColor3f(0, 0, 0);
 	float detras = 0;
-	int l = ancho + 6 / 2;
+	int l = ancho / 2;
 	float inicioPeriodo = (int)Z - (int)Z % (int)periodo;
-	float distanciaAnuncio = (periodo / distancia);
+	float distanciaAnuncio = periodo / distancia;
 
 	if (inicioPeriodo + distanciaAnuncio < Z) { detras = 1; }
 	distanciaAnuncio += inicioPeriodo + (periodo * detras);
@@ -308,17 +318,23 @@ void estrella(float distancia) {
 	float x = funcionCarretera(distanciaAnuncio);
 	float d = derivada(distanciaAnuncio);
 	float n = normal(d);
-	
 	GLfloat v0[3] = { x - (n * l), 0.0 , distanciaAnuncio - (-1 * d * n * l) };
 	GLfloat v3[3] = { x + (n * l) , 0.0 , distanciaAnuncio + (-1 * d * n * l) };
-	GLfloat a0[3] = { v0[0], -4, v0[2] };
-	GLfloat a1[3] = { v0[0], 4 ,v0[2] };
-	GLfloat a2[3] = { v3[0], 4, v3[2] };
-	GLfloat a3[3] = { v3[0], -4, v3[2] };
+	
+	// float vTang[3] = { v0[0] - v3[0],0.f, v0[2] - v3[2] };
+	// float vEstr[3] = { 0.f,0.f,1.f };
+	// float anguloGiro = deg(acos(rad(((vTang[0] * vEstr[0]) + (vTang[2] * vEstr[2])) / (sqrtf(powf(vTang[0], 2) + powf(vTang[2], 2)) * sqrtf(powf(vEstr[0], 2) + powf(vEstr[2], 2))))));
+	GLfloat a0[3] = { v0[0], 2, v0[2] };
+	GLfloat a1[3] = { v0[0], 3 ,v0[2] };
+	GLfloat a2[3] = { v3[0], 3, v3[2] };
+	GLfloat a3[3] = { v3[0], 2, v3[2] };
 
+	//Con quadtex ocurre que al pasar por la estrella, el hud desaparace durant un momento,
+	// por lo que se ha optado por una geometria que por el centro no halla espacio de dibujo
+	//quadtex(a3, a0, a1, a2, 0, 1, 0, 1, 10, 10); 
 	glPushMatrix();
-
-
+	GLUquadric* estrCirc = gluNewQuadric();
+	gluQuadricTexture(estrCirc, GL_TRUE);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glBindTexture(GL_TEXTURE_2D, textura[8]);
@@ -326,10 +342,16 @@ void estrella(float distancia) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+	glTranslatef(x, 0, distanciaAnuncio);
+	glRotatef(30, 0.0, 1.0, 0.0);
+	glPushMatrix();
 	
+	glRotatef(anguloEstrella, 0, 0, -1);
+	gluDisk(estrCirc, 2.0, 6, 10, 1);
+	glPopMatrix();
+
 	
-	// glScalef(4.0,1.6,1.0);
-	quadtex(a3, a0, a1, a2, 0, 1, 0, 1, 5, 5);
 
 	glDisable(GL_BLEND);
 	glPopMatrix();
@@ -436,12 +458,44 @@ void fondo() {
 		}
 	}
 	glPopMatrix();
+
+	glPushMatrix();
+	GLfloat planoS[4] = { 1,0,0,0};
+	GLfloat planoT[4] = { 0,0,1,0 };
+
+	
+	glBindTexture(GL_TEXTURE_2D, textura[10]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRROR_CLAMP_TO_BORDER_EXT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,GL_MIRROR_CLAMP_TO_BORDER_EXT);
+
+	if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	
+	glEnable(GL_TEXTURE_GEN_S);
+	glEnable(GL_TEXTURE_GEN_T);
+
+	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+	glTexGenfv(GL_S, GL_OBJECT_PLANE, planoS);
+	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+	glTexGenfv(GL_T, GL_OBJECT_PLANE, planoT);
+	
+	GLUquadricObj* sphere = gluNewQuadric();
+	gluQuadricDrawStyle(sphere, GLU_FILL);
+	gluQuadricTexture(sphere, TRUE);
+	gluQuadricNormals(sphere, GLU_SMOOTH);
+	glTranslatef(0, 2, 10);
+	glRotatef(anguloEstrella, 0, 1, 0);
+	glRotatef(90, 1, 0, 0);
+	gluSphere(sphere, 1.0, 20, 20);
+	glDisable(GL_TEXTURE_GEN_S);
+	glDisable(GL_TEXTURE_GEN_T);
+	glPopMatrix();
 }
 
 void luzfoco() {
 
-	//Cheatsheet luces: https://i.gyazo.com/08d9da01d2b54086b40d41097cb25e75.png
-	
 	if (noche ) {
 		if(modoVista){
 		//glPushMatrix();
@@ -477,7 +531,6 @@ void luzfoco() {
 
 void luces() {
 
-	//Cheatsheet luces: https://i.gyazo.com/08d9da01d2b54086b40d41097cb25e75.png
 
 	if (noche) {
 
@@ -734,6 +787,7 @@ void onTimer(int valor) {
 	tSegundos = timeinfo->tm_sec;
 	Z += sin(angulo * PI / 180) * velocidad * tiempo_transcurrido / 1000.0f;
 	X += cos(angulo * PI / 180) * velocidad * tiempo_transcurrido / 1000.0f;
+	anguloEstrella += velocidadEstrella * tiempo_transcurrido / 1000.0f;
 
 	stringstream titulo;
 	titulo << fixed;
