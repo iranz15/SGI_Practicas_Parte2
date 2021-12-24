@@ -86,50 +86,55 @@ X+    <---------|-------->     -X
 
 */
 
-void textomejorado(unsigned int x, unsigned int y, char* text, const GLfloat* color, void* font, bool WCS)
+// *Esta implementacion de quadtex no tiene el calculo de normales. ASi si a estos quads se le aplica luz, se aplicara a los dos lados
+// Se utiliza para los detalles de la carretera.
+void quadtexAlter(GLfloat v0[3], GLfloat v1[3], GLfloat v2[3], GLfloat v3[3],
+	GLfloat smin, GLfloat smax, GLfloat tmin, GLfloat tmax,
+	int M, int N)
+	// Dibuja un cuadrilatero con resolucion MxN con normales y coordenadas de textura
 {
-	
-	glPushAttrib(GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_2D);
-	glColor3fv(color);
-
-	if (!WCS) {
-		int viewport[4];
-		glGetIntegerv(GL_VIEWPORT, viewport);
-
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glLoadIdentity();
-		gluOrtho2D(viewport[0], viewport[2], viewport[1], viewport[3]);
-
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glLoadIdentity();
-
-		glRasterPos2i(x, y);
-
-		while (*text)
-		{
-			glutBitmapCharacter(font, *text++);
+	if (M < 1) M = 1; if (N < 1) N = 1;	// Resolucion minima
+	GLfloat ai[3], ci[3], bj[3], dj[3], p0[3], p1[3];
+	// calculo de la normal (v1-v0)x(v3-v0) unitaria 
+	GLfloat v01[] = { v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2] };
+	GLfloat v03[] = { v3[0] - v0[0], v3[1] - v0[1], v3[2] - v0[2] };
+	GLfloat normal[] = { v01[1] * v03[2] - v01[2] * v03[1] ,
+						 v01[2] * v03[0] - v01[0] * v03[2] ,
+						 v01[0] * v03[1] - v01[1] * v03[0] };
+	//float norma = sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);			//*
+	//glNormal3f(normal[0] / norma, normal[1] / norma, normal[2] / norma);									//*
+	// ai: punto sobre el segmento v0v1, bj: v1v2, ci: v3v2, dj: v0v3
+	for (int i = 0; i < M; i++) {
+		// puntos sobre segmentos a y c
+		for (int k = 0; k < 3; k++) {
+			ai[k] = v0[k] + i * (v1[k] - v0[k]) / M;
+			ci[k] = v3[k] + i * (v2[k] - v3[k]) / M;
 		}
-		glPopMatrix();
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-		glMatrixMode(GL_MODELVIEW);
-	}
-	else {
-		glRasterPos2i(x, y);
-		while (*text)
-		{
-			glutBitmapCharacter(font, *text++);
+		// strip vertical. i=s, j=t
+		glBegin(GL_QUAD_STRIP);
+		for (int j = 0; j <= N; j++) {
+			for (int k = 0; k < 3; k++) {
+				// puntos sobre los segmentos b y d
+				bj[k] = v1[k] + j * (v2[k] - v1[k]) / N;
+				dj[k] = v0[k] + j * (v3[k] - v0[k]) / N;
+
+				// p0= ai + j/N (ci-ai)
+				p0[k] = ai[k] + j * (ci[k] - ai[k]) / N;
+				// p1= p0 + 1/M (bj-dj)
+				p1[k] = p0[k] + (bj[k] - dj[k]) / M;
+			}
+			// punto izquierdo
+			glTexCoord2f(smin + (smax - smin) * i / M, tmin + (tmax - tmin) * j / N);  // s,t
+			glVertex3f(p0[0], p0[1], p0[2]);
+			// punto derecho
+			glTexCoord2f(smin + (smax - smin) * (i + 1) / M, tmin + (tmax - tmin) * j / N);
+			glVertex3f(p1[0], p1[1], p1[2]);
 		}
+		glEnd();
 	}
-	glEnable(GL_LIGHTING);
-	glEnable(GL_TEXTURE_2D);
-	glPopAttrib();
-	
 }
+
+
 
 
 
@@ -205,7 +210,7 @@ void init()
 	std::cout << "CONTROLES BASICOS:\n";
 	std::cout << "Flecha izquierda / derecha: giro del vehiculo \n";
 	std::cout << "Flecha arriba/abajo: aumento/disminucion de la velocidad \n";
-	std::cout << "S/s: Activa/desactiva un modelo simple en alambrico sin luces ni texturas \n";
+	std::cout << "S/s: Activa/desactiva un modelo simple en alambrico sin luces ni texturas\nSi esta activo N/n se puede visualizar la resolucion adicional de los poligonos para conseguir luces mas realistas \n";
 	std::cout << "L/l: Cambia entre modo diurno/nocturno \n";
 	std::cout << "N/n: Cambia el estado de la niebla (on/off). Varia si L/l esta activado \n";
 	std::cout << "C/c: Cambia la visibilidad de elementos solidarios a la cámara -HUD-. El HUD contiene informacion acerca de \nla velocidad actual, el norte (eje -Z) y otros modos implementados \n";
@@ -310,56 +315,7 @@ void anuncio(float distancia) {
 	glPopMatrix();
 
 }
-void estrella(float distancia) {
-	float detras = 0;
-	float inicioPeriodo = (int)Z - (int)Z % (int)periodo;
-	float distanciaAnuncio = periodo / distancia;
 
-	if (inicioPeriodo + distanciaAnuncio < Z) { detras = 1; }
-	distanciaAnuncio += inicioPeriodo + (periodo * detras);
-
-	float x = funcionCarretera(distanciaAnuncio);
-	float d = derivada(distanciaAnuncio);
-	float n = normal(d);
-	GLfloat v0[3] = { x - (n * l), 0.0 , distanciaAnuncio - (-1 * d * n * l) };
-	GLfloat v3[3] = { x + (n * l) , 0.0 , distanciaAnuncio + (-1 * d * n * l) };
-	
-	// float vTang[3] = { v0[0] - v3[0],0.f, v0[2] - v3[2] };
-	// float vEstr[3] = { 0.f,0.f,1.f };
-	// float anguloGiro = deg(acos(rad(((vTang[0] * vEstr[0]) + (vTang[2] * vEstr[2])) / (sqrtf(powf(vTang[0], 2) + powf(vTang[2], 2)) * sqrtf(powf(vEstr[0], 2) + powf(vEstr[2], 2))))));
-	GLfloat a0[3] = { v0[0], 2, v0[2] };
-	GLfloat a1[3] = { v0[0], 3 ,v0[2] };
-	GLfloat a2[3] = { v3[0], 3, v3[2] };
-	GLfloat a3[3] = { v3[0], 2, v3[2] };
-
-	//Con quadtex ocurre que al pasar por la estrella, el hud desaparace durant un momento,
-	// por lo que se ha optado por una geometria que por el centro no halla espacio de dibujo
-	//quadtex(a3, a0, a1, a2, 0, 1, 0, 1, 10, 10); 
-	glPushMatrix();
-	GLUquadric* estrCirc = gluNewQuadric();
-	gluQuadricTexture(estrCirc, GL_TRUE);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glBindTexture(GL_TEXTURE_2D, textura[8]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
-	glTranslatef(x, 0, distanciaAnuncio);
-	glRotatef(30, 0.0, 1.0, 0.0);
-	glPushMatrix();
-	
-	glRotatef(anguloEstrella, 0, 0, -1);
-	gluDisk(estrCirc, 2.0, 6, 10, 1);
-	glPopMatrix();
-
-	
-
-	glDisable(GL_BLEND);
-	glPopMatrix();
-
-}
 void circuito() {
 	glPushMatrix();
 	if (noche & !modoSimple) {
@@ -416,9 +372,54 @@ void circuito() {
 	}
 	glPopMatrix();
 }
+void estrella(float distancia) {
+	float detras = 0;
+	float inicioPeriodo = (int)Z - (int)Z % (int)periodo;
+	float distanciaAnuncio = periodo / distancia;
 
+	if (inicioPeriodo + distanciaAnuncio < Z) { detras = 1; }
+	distanciaAnuncio += inicioPeriodo + (periodo * detras);
+
+	float x = funcionCarretera(distanciaAnuncio);
+	float d = derivada(distanciaAnuncio);
+	float n = normal(d);
+	GLfloat v0[3] = { x - (n * l), 0.0 , distanciaAnuncio - (-1 * d * n * l) };
+	GLfloat v3[3] = { x + (n * l) , 0.0 , distanciaAnuncio + (-1 * d * n * l) };
+
+	GLfloat a0[3] = { v0[0], 2, v0[2] };
+	GLfloat a1[3] = { v0[0], 3 ,v0[2] };
+	GLfloat a2[3] = { v3[0], 3, v3[2] };
+	GLfloat a3[3] = { v3[0], 2, v3[2] };
+
+	//Con quadtex ocurre que al pasar por la estrella, el hud desaparace durant un momento,
+	// por lo que se ha optado por una geometria que por el centro no halla espacio de dibujo
+	//quadtex(a3, a0, a1, a2, 0, 1, 0, 1, 10, 10); 
+	glPushMatrix();
+	GLUquadric* estrCirc = gluNewQuadric();
+	gluQuadricTexture(estrCirc, GL_TRUE);
+	gluQuadricOrientation(estrCirc, GLU_INSIDE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBindTexture(GL_TEXTURE_2D, textura[8]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+	glTranslatef(x, 0, distanciaAnuncio);
+	glRotatef(30, 0.0, 1.0, 0.0);
+	glRotatef(anguloEstrella, 0, 0, -1);
+	if (noche) gluDisk(estrCirc, 2.0, 6, 20, 8);
+	else gluDisk(estrCirc, 2.0, 6, 10, 1);
+
+
+
+	glDisable(GL_BLEND);
+	glPopMatrix();
+
+}
 void detalles( int inicial,int final ) {
-	
+	glEnable(GL_BLEND);
 	for (int i = inicial; i <= final; i++) {
 		float detras = 0;
 
@@ -440,9 +441,7 @@ void detalles( int inicial,int final ) {
 
 		GLfloat v1[3] = { x1 - (n1 * l), 0.0 , siguiente - (-1 * d1 * n1 * l) };
 		GLfloat v2[3] = { x1 + (n1 * l) , 0.0 , siguiente + (-1 * d1 * n1 * l) };
-
-
-	glEnable(GL_BLEND);
+	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glBindTexture(GL_TEXTURE_2D, textura[9]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -459,46 +458,50 @@ void detalles( int inicial,int final ) {
 	//Externo
 	glPushMatrix();
 	glDepthMask(GL_FALSE);
-	quadtex(  v3, v2, v2YBorde, v3YBorde, 0, 1, 0, 1, 1, 1);
+	if (noche) quadtexAlter(v3, v2, v2YBorde, v3YBorde, 0, 1, 0, 1, 7, 7);
+		else quadtexAlter(  v3, v2, v2YBorde, v3YBorde, 0, 1, 0, 1, 1, 1);
 	glDepthMask(GL_TRUE);
 	glPopMatrix();
 
 	//Interno
 	glPushMatrix();
 	glDepthMask(GL_FALSE);
-	quadtex(v0, v1, v1YBorde, v0YBorde, 0, 1, 0, 1, 1, 1);
+	if (noche) quadtexAlter(v0, v1, v1YBorde, v0YBorde, 0, 1, 0, 1, 7, 7);
+	else quadtexAlter(v0, v1, v1YBorde, v0YBorde, 0, 1, 0, 1, 1, 1);
 	glDepthMask(GL_TRUE);
 	glPopMatrix();
-	glDisable(GL_BLEND);
-	}
 
+	
+	
+	}
+	glDisable(GL_BLEND);
 }
 
-void panelflechas(float distancia) {
-	glPushMatrix();
-	float detras = 0;
-	float inicioPeriodo = (int)Z - (int)Z % (int)periodo;
-	float distanciaAnuncio = (periodo / distancia) - 5;
-	float siguiente = distanciaAnuncio + distancia - 5;
+void panelflechas(float distanciaFlechas) {
+	
+	
+		float detras = 0;
 
-	if (inicioPeriodo + distanciaAnuncio < Z) { detras = 1; }
-	distanciaAnuncio += inicioPeriodo + (periodo * detras);
+		float inicioPeriodo = ((int)Z - (int)Z % (int)periodo);
+		float punto = inicioPeriodo + ((nQuads/2) - 5) * distancia;
+		if (punto < Z) { punto += periodo; }
+		float siguiente = punto + distancia;
 
-	float x = funcionCarretera(distanciaAnuncio);
-	float d = derivada(distanciaAnuncio);
-	float n = normal(d);
+		float x = funcionCarretera(punto);
+		float d = derivada(punto);
+		float n = normal(d);
 
-	float x1 = funcionCarretera(siguiente);
-	float d1 = derivada(siguiente);
-	float n1 = normal(d1);
+		float x1 = funcionCarretera(siguiente);
+		float d1 = derivada(siguiente);
+		float n1 = normal(d1);
 
-	GLfloat v3[3] = { x + (n * l) , 0.0 , distanciaAnuncio + (-1 * d * n * l) };
-	GLfloat v2[3] = { x1 + (n1 * l) , 0.0 , siguiente + (-1 * d1 * n1 * l) };
+		GLfloat v3[3] = { x + (n * l) , 0.0 , punto + (-1 * d * n * l) };
 
-	GLfloat a0[3] = { v2[0], 2, v2[2] };
-	GLfloat a1[3] = { v2[0], 3 ,v2[2] };
-	GLfloat a2[3] = { v3[0], 3, v3[2] };
-	GLfloat a3[3] = { v3[0], 2, v3[2] };
+		GLfloat v2[3] = { x1 + (n1 * l) , 0.0 , siguiente + (-1 * d1 * n1 * l) };
+
+		float altura = 0.5f;
+		GLfloat v3YBorde[3] = { v3[0] , altura , v3[2] };
+		GLfloat v2YBorde[3] = { v2[0] , altura , v2[2] };
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -509,7 +512,7 @@ void panelflechas(float distancia) {
 	else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glPushMatrix();
 	glDepthMask(GL_FALSE);
-	quadtex(a0, a1, a2, a3, 0, 1, 0, 1, 1, 1);
+	quadtex(v3, v2, v2YBorde, v3YBorde, 0, 1, 0, 1, 1, 1);
 	glDepthMask(GL_TRUE);
 	glPopMatrix();
 	glDisable(GL_BLEND);
@@ -739,9 +742,9 @@ void generartexto() {
 	char textAlambrico[] = "Alambrico: ON";
 	int viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
-	textomejorado(0, 3, ayuda, ROJO, GLUT_BITMAP_9_BY_15, false);
-	textomejorado(0, 18, separador, ROJO, GLUT_BITMAP_9_BY_15,false);
-	if(HUD) textomejorado(0, 48, hud, ROJO, GLUT_BITMAP_9_BY_15, false);
+	texto(0, 3, ayuda, ROJO, GLUT_BITMAP_9_BY_15, false);
+	texto(0, 18, separador, ROJO, GLUT_BITMAP_9_BY_15,false);
+	if(HUD) texto(0, 48, hud, ROJO, GLUT_BITMAP_9_BY_15, false);
 	}
 }
 void mostrarHUD() {
@@ -863,7 +866,7 @@ void display()
 		
 	}
 
-	generartexto();
+	
 	ambiente();
 	anuncio(2.f); //El anuncio se genera a mitad de ampitud de onda
 	circuito();
@@ -880,7 +883,7 @@ void display()
 	luces();
 	
 	mostrarHUD();
-	
+	generartexto();
 	
 	glutSwapBuffers();
 
