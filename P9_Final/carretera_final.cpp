@@ -65,6 +65,7 @@ static int modoSimple = 0;
 static int mensajes = 0;
 static int cielo = 3;
 static int sonido = 1;
+static int dibujaEjes = 0;
 
 //Lista de variables de textura
 GLuint textura[13];
@@ -221,12 +222,14 @@ void init()
 	std::cout << "C/c: Cambia la visibilidad de elementos solidarios a la cámara -HUD-. El HUD contiene informacion acerca de \nla velocidad actual, el norte (eje -Z) y otros modos implementados \n";
 	std::cout << "---------------------\n";
 	std::cout << "MEJORAS/CONTROLES AVANZADOS:\n";
-	std::cout << "T/t: Activa/desactiva mensajes de ayuda que indican que modos estan activos. ( Estos mensajes no consideramos que son parte del HUD,\n por lo que C/c no afecta a este opcion ) \n";
+	std::cout << "T/t: Activa/desactiva mensajes de ayuda que indican que modos estan activos. ( Se ha considerado que estos mensajes no forman del HUD,\npor lo que C/c no afecta a este opcion ) \n";
 	std::cout << "V/v: Activa/desactiva una vista de aguila para ver el circuito desde arriba. Se desactiva el movimiento mediante flechas en este modo \n";
 	std::cout << "W/w: Cambia la textura de fondo del cielo entre una seleccion de imagenes \n";
 	std::cout << "M/m: Activa/desactiva la musica y los sonidos \n";
 	std::cout << "K/k: Si estan activos los sonidos (M/m) cambia la cancion actual entre una seleccion de canciones \n";
 	std::cout << "R/r: Reseta y pone los valores predeterminados de los modos descritos previamente (visual y sonoro) \n";
+	std::cout << "E/e: Dibuja/Desdibuja unos ejes en (0,0,0) \n";
+	std::cout << "J/j: Guarda una captura del estado actual del programa en el directorio donde esta el .exe \n";
 
 }
 
@@ -741,16 +744,53 @@ void generartexto() {
 	else std::copy(BLANCO, BLANCO + 4, color);
 	char separador[] = "-----------------";
 	char ayuda[] = "Mensajes de ayuda";
-	char hud[] = "HUD: ON";
-	char textNoche[] = "Modo Noche: ON";
-	char textNiebla[] = "Niebla: ON";
-	char textAguila[] = "Aguila: ON";
-	char textAlambrico[] = "Alambrico: ON";
-	int viewport[4];
-	glGetIntegerv(GL_VIEWPORT, viewport);
-	texto(0, 3, ayuda, color, GLUT_BITMAP_9_BY_15, false);
+
+	char* textNocheC;
+	string textNoche("Modo Noche:");
+	if (noche) textNoche.append(" ON");
+	else textNoche.append(" OFF");
+	textNocheC = &textNoche[0];
+
+	char* textHudC;
+	string textHud("HUD:");
+	if (HUD) textHud.append(" ON");
+	else textHud.append(" OFF");
+	textHudC = &textHud[0];
+
+	char* textNieblaC;
+	string textNiebla("Niebla:");
+	if (niebla) textNiebla.append(" ON");
+	else textNiebla.append(" OFF");
+	textNieblaC = &textNiebla[0];
+
+	char* textVistaC;
+	string textVista("Vista de Aguila:");
+	if (!modoVista) textVista.append(" ON");
+	else textVista.append(" OFF");
+	textVistaC = &textVista[0];
+
+	char* textAlambricoC;
+	string textAlambrico("Modo Alambrico:");
+	if (!modoSimple) textAlambrico.append(" ON");
+	else textAlambrico.append(" OFF");
+	textAlambricoC = &textAlambrico[0];
+
+	char* textMusicaC;
+	string textMusica("Sonido:");
+	if (sonido) textMusica.append(" ON");
+	else textMusica.append(" OFF");
+	textMusicaC = &textMusica[0];
+
+	//char textAlambrico[] = "Alambrico: ON";
+
+	texto(0, 5, ayuda, color, GLUT_BITMAP_9_BY_15, false);
 	texto(0, 18, separador, color, GLUT_BITMAP_9_BY_15,false);
-	if(HUD) texto(0, 48, hud, color, GLUT_BITMAP_9_BY_15, false);
+	texto(0, 26, textNocheC, color, GLUT_BITMAP_9_BY_15, false);
+	texto(0, 40, textHudC, color, GLUT_BITMAP_9_BY_15, false);
+	texto(0, 52, textNieblaC, color, GLUT_BITMAP_9_BY_15, false);
+	texto(0, 64, textVistaC, color, GLUT_BITMAP_9_BY_15, false);
+	texto(0, 76, textMusicaC, color, GLUT_BITMAP_9_BY_15, false);
+	texto(0, 88, textAlambricoC, color, GLUT_BITMAP_9_BY_15, false);
 	}
 }
 void mostrarHUD() {
@@ -894,6 +934,8 @@ void display()
 	if (noche && !modoSimple) glClearColor(0.0, 0.0, 0.0, 1.0); //Fondo negro
 	else glClearColor(1.0, 1.0, 1.0, 1.0);		 //Fondo blanco
 
+
+
 	luzfoco();									//Aqui para que sea adyacente a la camara
 
 	if (modoVista) { gluLookAt(X, Y, Z, X + mirar * cos(angulo * PI / 180), Y, Z + mirar * sin(angulo * PI / 180), 0, modoVista, 1 - modoVista);}
@@ -910,12 +952,16 @@ void display()
 		
 	}
 
-	
+	if (dibujaEjes) {
+		glPushMatrix();
+		glScalef(8, 8, 8);
+		ejes();
+		glPopMatrix();
+	}
 	ambiente();
 	anuncio(2.f); //El anuncio se genera a mitad de ampitud de onda
 	circuito();
 	fondo();
-	ejes();
 	circuito();
 	planeta(1.f);
 	
@@ -1046,8 +1092,19 @@ void onKey(unsigned char tecla, int x, int y) {
 	case 'r':
 		reset();
 		break;
+	case 'E':
+	case 'e':
+		if (dibujaEjes)
+			dibujaEjes = 0;
+		else dibujaEjes = 1;
+		break;
+	case 'J':
+	case 'j':
+		saveScreenshot((char*)"captura_carretera_1.jpg", 900, 900);
+		engine->play2D("./sonidos/sonido_camara.mp3");
+		break;
+	
 	case 27:
-		
 		exit(0);
 
 	}
