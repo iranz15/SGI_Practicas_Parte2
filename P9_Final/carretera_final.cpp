@@ -67,7 +67,7 @@ static int cielo = 3;
 static int sonido = 1;
 
 //Lista de variables de textura
-GLuint textura[12];
+GLuint textura[13];
 
 //Lista de variables de textura
 int totalcanciones = 2;
@@ -86,8 +86,9 @@ X+    <---------|-------->     -X
 
 */
 
-// *Esta implementacion de quadtex no tiene el calculo de normales. ASi si a estos quads se le aplica luz, se aplicara a los dos lados
-// Se utiliza para los detalles de la carretera.
+/* A partir del metodo descrito en Utilidades.h, esta implementacion de quadtex no tiene el calculo de normales. 
+   Asi si a estos quads se le aplica luz, se aplicara a FRONT y BACK.
+   Esto nos sirve para los decoracion de la carretera en detalles(); */
 void quadtexAlter(GLfloat v0[3], GLfloat v1[3], GLfloat v2[3], GLfloat v3[3],
 	GLfloat smin, GLfloat smax, GLfloat tmin, GLfloat tmax,
 	int M, int N)
@@ -101,8 +102,8 @@ void quadtexAlter(GLfloat v0[3], GLfloat v1[3], GLfloat v2[3], GLfloat v3[3],
 	GLfloat normal[] = { v01[1] * v03[2] - v01[2] * v03[1] ,
 						 v01[2] * v03[0] - v01[0] * v03[2] ,
 						 v01[0] * v03[1] - v01[1] * v03[0] };
-	//float norma = sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);			//*
-	//glNormal3f(normal[0] / norma, normal[1] / norma, normal[2] / norma);									//*
+	//float norma = sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);			//* Se comenta
+	//glNormal3f(normal[0] / norma, normal[1] / norma, normal[2] / norma);									//* Se comenta
 	// ai: punto sobre el segmento v0v1, bj: v1v2, ci: v3v2, dj: v0v3
 	for (int i = 0; i < M; i++) {
 		// puntos sobre segmentos a y c
@@ -189,6 +190,10 @@ void texturas() {
 	glGenTextures(1, &textura[11]);
 	glBindTexture(GL_TEXTURE_2D, textura[11]);
 	loadImageFile((char*)"./texturas/flechas_textura.png");
+
+	glGenTextures(1, &textura[12]);
+	glBindTexture(GL_TEXTURE_2D, textura[12]);
+	loadImageFile((char*)"./texturas/logo_textura.png");
 }
 
 
@@ -410,7 +415,7 @@ void estrella(float distancia) {
 	glRotatef(30, 0.0, 1.0, 0.0);
 	glRotatef(anguloEstrella, 0, 0, -1);
 	if (noche) gluDisk(estrCirc, 2.0, 6, 20, 8);
-	else gluDisk(estrCirc, 2.0, 6, 10, 1);
+	else gluDisk(estrCirc, 2.0, 6, 14, 1);
 
 
 
@@ -455,15 +460,16 @@ void detalles( int inicial,int final ) {
 
 	GLfloat v1YBorde[3] = { v1[0], altura , v1[2] };
 	GLfloat v2YBorde[3] = { v2[0] , altura , v2[2] };
-	//Externo
+
+	//Borde Derecha
 	glPushMatrix();
 	glDepthMask(GL_FALSE);
 	if (noche) quadtexAlter(v3, v2, v2YBorde, v3YBorde, 0, 1, 0, 1, 7, 7);
-		else quadtexAlter(  v3, v2, v2YBorde, v3YBorde, 0, 1, 0, 1, 1, 1);
+		else quadtexAlter( v3, v2, v2YBorde, v3YBorde, 0, 1, 0, 1, 1, 1);
 	glDepthMask(GL_TRUE);
 	glPopMatrix();
 
-	//Interno
+	//Borde Izquierda
 	glPushMatrix();
 	glDepthMask(GL_FALSE);
 	if (noche) quadtexAlter(v0, v1, v1YBorde, v0YBorde, 0, 1, 0, 1, 7, 7);
@@ -503,8 +509,7 @@ void panelflechas(float distanciaFlechas) {
 		GLfloat v3YBorde[3] = { v3[0] , altura , v3[2] };
 		GLfloat v2YBorde[3] = { v2[0] , altura , v2[2] };
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	glBindTexture(GL_TEXTURE_2D, textura[11]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -512,10 +517,8 @@ void panelflechas(float distanciaFlechas) {
 	else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glPushMatrix();
 	glDepthMask(GL_FALSE);
-	quadtex(v3, v2, v2YBorde, v3YBorde, 0, 1, 0, 1, 1, 1);
+	quadtex(v3, v2, v2YBorde, v3YBorde, 0, -1, 0, -1, 1, 1);
 	glDepthMask(GL_TRUE);
-	glPopMatrix();
-	glDisable(GL_BLEND);
 	glPopMatrix();
 }
 
@@ -733,6 +736,9 @@ void ambiente() {
 
 void generartexto() {
 	if (mensajes) {
+		GLfloat color [3];
+	if (modoSimple)  std::copy(NEGRO, NEGRO + 4, color);
+	else std::copy(BLANCO, BLANCO + 4, color);
 	char separador[] = "-----------------";
 	char ayuda[] = "Mensajes de ayuda";
 	char hud[] = "HUD: ON";
@@ -742,31 +748,61 @@ void generartexto() {
 	char textAlambrico[] = "Alambrico: ON";
 	int viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
-	texto(0, 3, ayuda, ROJO, GLUT_BITMAP_9_BY_15, false);
-	texto(0, 18, separador, ROJO, GLUT_BITMAP_9_BY_15,false);
-	if(HUD) texto(0, 48, hud, ROJO, GLUT_BITMAP_9_BY_15, false);
+	texto(0, 3, ayuda, color, GLUT_BITMAP_9_BY_15, false);
+	texto(0, 18, separador, color, GLUT_BITMAP_9_BY_15,false);
+	if(HUD) texto(0, 48, hud, color, GLUT_BITMAP_9_BY_15, false);
 	}
 }
 void mostrarHUD() {
-	glPushAttrib(GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT);
 	
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
 	if(HUD){
-	
 	glPushMatrix();
 	glLoadIdentity();
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	gluOrtho2D(-1, 1, -1, 1);	//(-1,-1) es el punto mas abajo a la izquierda del viewport, (1,1) el maximo a la derecha y (0,0) el centro
+	glOrtho(-1, 1, -1, 1,-1,100);	//(-1,-1) es el punto mas abajo a la izquierda del viewport, (1,1) el maximo a la derecha y (0,0) el centro
 	glMatrixMode(GL_MODELVIEW);
-
+	gluLookAt(0, 0, 0, 0, 0, -1, 0, 1, 0);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	
-	
+	//Esfera
+	glPushMatrix();
+	glBindTexture(GL_TEXTURE_2D, textura[1]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	glTranslatef(-0.8, 0.8, 0.0);
+	GLUquadricObj* test = gluNewQuadric();
+	gluQuadricDrawStyle(test, GLU_FILL);
+	gluQuadricTexture(test, TRUE);
+	gluQuadricNormals(test, GLU_SMOOTH);
+	glRotatef(anguloEstrella, 0, 1, 0);
+	//glColor4f(0.0, 0.0, 0.0, 1.0);
+	gluSphere(test, 0.2, 20, 20);
+	glPopMatrix();
+
+	glPushMatrix();
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBindTexture(GL_TEXTURE_2D, textura[12]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	GLfloat v0[3] = { 0.2, 0.85, 0.0 };
+	GLfloat v1[3] = { 1.0, 0.85, 0.0 };
+	GLfloat v2[3] = { 1.0, 1.0, 0.0 };
+	GLfloat v3[3] = { 0.2, 1.0, 0.0 };
+	quadtex( v0, v1, v2, v3, 0, 1, 0, 1, 0, 0);
+	glDisable(GL_BLEND);
+	glPopMatrix();
+
+
+	//Contador velocidad
+	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
 	// Habilitamos blending
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -775,12 +811,18 @@ void mostrarHUD() {
 	
 	// Control Velocidad
 	glPushMatrix();
-	glColor4f(1, 0, 0.0, 0.7);
+
+	if (velocidad <= 10) glColor4f(0, 1, 0.3, 0.7);
+	if (velocidad > 10 && velocidad < 20) glColor4f(1, 1, 0.0, 0.7);
+	if (velocidad >= 20 ) glColor4f(1, 0.0, 0.0, 0.7);
+
+	float aux = -1 + (velocidad / 30);
+	if (aux > 0.8) aux = 0.8;
 	glBegin(GL_POLYGON);
-	glVertex2f(0.90, -0);
+	glVertex2f(0.90, aux);
 	glVertex2f(0.90, -1.00);
 	glVertex2f(1.00, -1.00);
-	glVertex2f(1.00, -0);
+	glVertex2f(1.00, aux);
 
 	glEnd();
 	glPopMatrix();
@@ -790,6 +832,9 @@ void mostrarHUD() {
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_BLEND);
 
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_DEPTH_TEST);
 
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
@@ -797,10 +842,9 @@ void mostrarHUD() {
 	glPopMatrix();
 	
 	}
-		glEnable(GL_TEXTURE_2D);
-	glEnable(GL_LIGHTING);
+	
 
-	glPopAttrib();
+	
 }
 void activarMusica() {
 
@@ -876,7 +920,7 @@ void display()
 	planeta(1.f);
 	
 	
-	detalles(1, nQuads / 2.5);
+	detalles(1, nQuads / 3.2);
 	estrella(1.f);
 	detalles(nQuads / 2, nQuads);
 	panelflechas(2.f);
