@@ -37,7 +37,7 @@ static float Y = 1;
 static float Z = 0;
 
 //Variables de generacion de la carretera
-static float amplitud = 8;
+static float amplitudCarretera = 8;
 static float periodo = 90;
 static int nQuads = 90;
 static int ancho = 4;
@@ -46,14 +46,24 @@ static int distancia = 1;
 static float threshold = 10;
 
 //Variables de control de camara
-static float ratioGiro = 5;
+float ratioGiro = 2;
 static float angulo = 90.0; //IMPORTANTE: Se genera la carretera hacia el eje +Z . Inicialmente desde 0.0.0 la tangente forma 90 grados con +X.
 static float velocidad = 0.0;
 static int mirar = 1;		//Constante para controlar la distancia entre la camara y el punto que esta mirando. Se ha escogido de forma arbitraria
 
-//Angulo de giro estrella. Se declara para que sea dependiente de la velocidad de proceso del computador. Giro de 30 grados de base
+//VARIABLES ANIMACION
+//Angulo de giro de la estructura estrella. 
 static float anguloEstrella;
-static float velocidadEstrella = 10.0;
+float velocidadEstrella = 10.0;
+
+//Ratio de desplazamiento de textura para el panel flechas.
+static float desplazamientoTextura;
+float ratioAnimacion = 0.2f;
+
+//Ratio de desplazamiento de la estructura panel flechas para que haga el efecto que esta flotando en el espacio. 
+static float movimientoPanel;
+float amplitudAnimacion = 10.f;
+
 
 //Flags de control y valores por defecto
 //Vista normal = 1/ Vista pajaro = 0
@@ -68,7 +78,7 @@ static int sonido = 1;
 static int dibujaEjes = 0;
 
 //Lista de variables de textura
-GLuint textura[13];
+GLuint textura[16];
 
 //Lista de variables de textura
 int totalcanciones = 2;
@@ -195,6 +205,18 @@ void texturas() {
 	glGenTextures(1, &textura[12]);
 	glBindTexture(GL_TEXTURE_2D, textura[12]);
 	loadImageFile((char*)"./texturas/logo_textura.png");
+
+	glGenTextures(1, &textura[13]);
+	glBindTexture(GL_TEXTURE_2D, textura[13]);
+	loadImageFile((char*)"./texturas/detalles_borde_final.png");
+
+	glGenTextures(1, &textura[14]);
+	glBindTexture(GL_TEXTURE_2D, textura[14]);
+	loadImageFile((char*)"./texturas/detalles_borde_final_esfera.png");
+
+	glGenTextures(1, &textura[15]);
+	glBindTexture(GL_TEXTURE_2D, textura[15]);
+	loadImageFile((char*)"./texturas/poste_flechas.jpg");
 }
 
 
@@ -235,7 +257,7 @@ void init()
 
 float funcionCarretera(float punto) {
 
-	return amplitud * sin(punto * 2 * PI / periodo);
+	return amplitudCarretera * sin(punto * 2 * PI / periodo);
 
 }
 
@@ -247,7 +269,7 @@ float normal(float d) {
 }
 
 
-float derivada(float punto) {
+float derivada(float punto,float amplitud) {
 
 	return(((2 * PI * amplitud) / periodo) * cos(punto * 2 * PI / periodo));
 }
@@ -263,7 +285,7 @@ void anuncio(float distancia) {
 	distanciaAnuncio += inicioPeriodo + (periodo * detras);
 
 	float x = funcionCarretera(distanciaAnuncio);
-	float d = derivada(distanciaAnuncio);
+	float d = derivada(distanciaAnuncio, amplitudCarretera);
 	float n = normal(d);
 
 	GLfloat v0[3] = { x - (n * l), 0.0 , distanciaAnuncio - (-1 * d * n * l) };
@@ -348,11 +370,11 @@ void circuito() {
 		float siguiente = punto + distancia;
 
 		float x = funcionCarretera(punto);
-		float d = derivada(punto);
+		float d = derivada(punto, amplitudCarretera);
 		float n = normal(d);
 
 		float x1 = funcionCarretera(siguiente);
-		float d1 = derivada(siguiente);
+		float d1 = derivada(siguiente, amplitudCarretera);
 		float n1 = normal(d1);
 
 		GLfloat v0[3] = { x - (n * l), 0.0 , punto - (-1 * d * n * l) };
@@ -389,7 +411,7 @@ void estrella(float distancia) {
 	distanciaAnuncio += inicioPeriodo + (periodo * detras);
 
 	float x = funcionCarretera(distanciaAnuncio);
-	float d = derivada(distanciaAnuncio);
+	float d = derivada(distanciaAnuncio, amplitudCarretera);
 	float n = normal(d);
 	GLfloat v0[3] = { x - (n * l), 0.0 , distanciaAnuncio - (-1 * d * n * l) };
 	GLfloat v3[3] = { x + (n * l) , 0.0 , distanciaAnuncio + (-1 * d * n * l) };
@@ -426,8 +448,14 @@ void estrella(float distancia) {
 	glPopMatrix();
 
 }
+
+
 void detalles( int inicial,int final ) {
 	glEnable(GL_BLEND);
+	GLUquadric* detallesFinales = gluNewQuadric();
+	gluQuadricTexture(detallesFinales, GL_TRUE);
+	GLUquadric* detallesfinalesEsfera = gluNewQuadric();
+	gluQuadricTexture(detallesfinalesEsfera, GL_TRUE);
 	for (int i = inicial; i <= final; i++) {
 		float detras = 0;
 
@@ -437,11 +465,11 @@ void detalles( int inicial,int final ) {
 		float siguiente = punto + distancia;
 
 		float x = funcionCarretera(punto);
-		float d = derivada(punto);
+		float d = derivada(punto, amplitudCarretera);
 		float n = normal(d);
 
 		float x1 = funcionCarretera(siguiente);
-		float d1 = derivada(siguiente);
+		float d1 = derivada(siguiente, amplitudCarretera);
 		float n1 = normal(d1);
 
 		GLfloat v0[3] = { x - (n * l), 0.0 , punto - (-1 * d * n * l) };
@@ -449,69 +477,130 @@ void detalles( int inicial,int final ) {
 
 		GLfloat v1[3] = { x1 - (n1 * l), 0.0 , siguiente - (-1 * d1 * n1 * l) };
 		GLfloat v2[3] = { x1 + (n1 * l) , 0.0 , siguiente + (-1 * d1 * n1 * l) };
-	
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glBindTexture(GL_TEXTURE_2D, textura[9]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-	float altura = 0.5f;
-	GLfloat v0YBorde[3] = { v0[0], altura , v0[2] };
-	GLfloat v3YBorde[3] = { v3[0] , altura , v3[2] };
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBindTexture(GL_TEXTURE_2D, textura[9]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-	GLfloat v1YBorde[3] = { v1[0], altura , v1[2] };
-	GLfloat v2YBorde[3] = { v2[0] , altura , v2[2] };
+		float altura = 0.5f;
+		GLfloat v0YBorde[3] = { v0[0], altura , v0[2] };
+		GLfloat v3YBorde[3] = { v3[0] , altura , v3[2] };
 
-	//Borde Derecha
-	glPushMatrix();
-	glDepthMask(GL_FALSE);
-	if (noche) quadtexAlter(v3, v2, v2YBorde, v3YBorde, 0, 1, 0, 1, 7, 7);
-		else quadtexAlter( v3, v2, v2YBorde, v3YBorde, 0, 1, 0, 1, 1, 1);
-	glDepthMask(GL_TRUE);
-	glPopMatrix();
+		GLfloat v1YBorde[3] = { v1[0], altura , v1[2] };
+		GLfloat v2YBorde[3] = { v2[0] , altura , v2[2] };
 
-	//Borde Izquierda
-	glPushMatrix();
-	glDepthMask(GL_FALSE);
-	if (noche) quadtexAlter(v0, v1, v1YBorde, v0YBorde, 0, 1, 0, 1, 7, 7);
-	else quadtexAlter(v0, v1, v1YBorde, v0YBorde, 0, 1, 0, 1, 1, 1);
-	glDepthMask(GL_TRUE);
-	glPopMatrix();
+		//Borde Derecha
+		glPushMatrix();
+		glDepthMask(GL_FALSE);
+		if (noche) quadtexAlter(v3, v2, v2YBorde, v3YBorde, 0, 1, 0, 1, 7, 7);
+		else quadtexAlter(v3, v2, v2YBorde, v3YBorde, 0, 1, 0, 1, 1, 1);
+		glDepthMask(GL_TRUE);
+		glPopMatrix();
 
+		//Borde Izquierda
+		glPushMatrix();
+		glDepthMask(GL_FALSE);
+		if (noche) quadtexAlter(v0, v1, v1YBorde, v0YBorde, 0, 1, 0, 1, 7, 7);
+		else quadtexAlter(v0, v1, v1YBorde, v0YBorde, 0, 1, 0, 1, 1, 1);
+		glDepthMask(GL_TRUE);
+		glPopMatrix();
+
+		//Retoques de principio y final de carretera
+
+		if (i == inicial || i == final) {
+			
+			
+		glBindTexture(GL_TEXTURE_2D, textura[13]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+		//Detalles final recorrido borde izquierda
+		glPushMatrix();
+		
+		if (i == inicial) glTranslatef(v3[0] , 0, v3[2]);
+		else glTranslatef(v2[0], 0, v2[2]);
+		glRotatef(90, -1, 0, 0);
+		gluCylinder(detallesFinales, 0.05, 0.05, altura, 5, 1);
+		glPopMatrix();
+
+		//Detalles final recorrido borde derecha
+		glPushMatrix();
+		if (i == inicial) glTranslatef(v0[0], 0, v0[2]);
+		else glTranslatef(v1[0], 0, v1[2]);
+		glRotatef(90, -1, 0, 0);
+		gluCylinder(detallesFinales, 0.05, 0.05, altura, 5, 1);
+		glPopMatrix();
+
+		
+		glBindTexture(GL_TEXTURE_2D, textura[14]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+		//Detalles final recorrido borde izquierda Bola
+		glPushMatrix();
+		if (i == inicial) glTranslatef(v3[0], altura, v3[2]);
+		else glTranslatef(v2[0], altura, v2[2]);
+		//glRotatef(90, -1, 0, 0);
+		gluSphere(detallesfinalesEsfera, 0.1, 5, 5);
+		glPopMatrix();
+
+		//Detalles final recorrido borde derecha Bola
+		glPushMatrix();
+		if (i == inicial) glTranslatef(v0[0], altura, v0[2]);
+		else glTranslatef(v1[0], altura, v1[2]);
+		//glRotatef(90,-1, 0,0);
+		gluSphere(detallesfinalesEsfera, 0.1, 5, 5);
+		glPopMatrix();
+
+
+
+		}
 	
 	
 	}
 	glDisable(GL_BLEND);
 }
 
-void panelflechas(float distanciaFlechas) {
+
+
+void panelflechas() {
 	
 	
-		float detras = 0;
+	float detras = 0;
 
-		float inicioPeriodo = ((int)Z - (int)Z % (int)periodo);
-		float punto = inicioPeriodo + ((nQuads/2) - 5) * distancia;
-		if (punto < Z) { punto += periodo; }
-		float siguiente = punto + distancia;
+	float inicioPeriodo = ((int)Z - (int)Z % (int)periodo);
+	float punto = inicioPeriodo + (nQuads * 0.85 * distancia);
+	if (punto < Z+4) { punto += periodo; }
+	float siguiente = punto + distancia;
 
-		float x = funcionCarretera(punto);
-		float d = derivada(punto);
-		float n = normal(d);
+	float x = funcionCarretera(punto);
+	float d = derivada(punto, amplitudCarretera);
+	float n = normal(d);
 
-		float x1 = funcionCarretera(siguiente);
-		float d1 = derivada(siguiente);
-		float n1 = normal(d1);
+	float x1 = funcionCarretera(siguiente);
+	float d1 = derivada(siguiente, amplitudCarretera);
+	float n1 = normal(d1);
+	float offsetX = 3.f;
+	float offsetZ = 3.f; 
+	float altura = 2.f;
+	GLfloat v0[3] = { x - (n * l) , 0.0 , punto - (-1 * d * n * l)  };
+	GLfloat v1[3] = { x1 - (n1 * l) + offsetX  , 0.0 , siguiente - (-1 * d1 * n1 * l) + offsetZ };
+		
 
-		GLfloat v3[3] = { x + (n * l) , 0.0 , punto + (-1 * d * n * l) };
+	GLfloat v0YBorde[3] = { v0[0], altura , v0[2] };
+	GLfloat v1YBorde[3] = { v1[0], altura , v1[2] };
 
-		GLfloat v2[3] = { x1 + (n1 * l) , 0.0 , siguiente + (-1 * d1 * n1 * l) };
 
-		float altura = 0.5f;
-		GLfloat v3YBorde[3] = { v3[0] , altura , v3[2] };
-		GLfloat v2YBorde[3] = { v2[0] , altura , v2[2] };
-
+	glPushMatrix(); 
+	//Animamos la estructura del panel para que parezca flotar
+	glTranslatef(0, derivada(movimientoPanel, amplitudAnimacion) , 0);
 
 	glBindTexture(GL_TEXTURE_2D, textura[11]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -519,10 +608,49 @@ void panelflechas(float distanciaFlechas) {
 	if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glPushMatrix();
-	glDepthMask(GL_FALSE);
-	quadtex(v3, v2, v2YBorde, v3YBorde, 0, -1, 0, -1, 1, 1);
-	glDepthMask(GL_TRUE);
+	glTranslatef(-4, 2, 0);
+	//Movemos la textura del panel para que parezca estar encendido
+	quadtexAlter(v0, v1, v1YBorde, v0YBorde, 0.f + desplazamientoTextura, -1.f + desplazamientoTextura, 0, -1 , 2, 2);
 	glPopMatrix();
+
+
+	glPushMatrix();
+	glBindTexture(GL_TEXTURE_2D, textura[15]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	GLUquadricObj* base = gluNewQuadric();
+	gluQuadricDrawStyle(base, GLU_FILL);
+	gluQuadricTexture(base, TRUE);
+	gluQuadricNormals(base, GLU_SMOOTH);
+	GLUquadricObj* baseEsfera = gluNewQuadric();
+	gluQuadricDrawStyle(baseEsfera, GLU_FILL);
+	gluQuadricTexture(baseEsfera, TRUE);
+	gluQuadricNormals(baseEsfera, GLU_SMOOTH);
+
+	glPushMatrix();
+	glTranslatef(-4, 0, 0);
+	glTranslatef(v1[0], 0, v1[2]);
+	glRotatef(90, -1, 0, 0);
+	gluCylinder(base, 0.2, 0.2, altura*2.f,5,5);
+	glScalef(0.5, 0.5, 0.5);
+	gluSphere(base, 1, 5, 5);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(-4, 0, 0);
+	glTranslatef(v0[0] , 0, v0[2] );
+	glRotatef(90, -1, 0, 0);
+	gluCylinder(base, 0.2, 0.2, altura * 2.f, 5, 5);
+	glScalef(0.5, 0.5, 0.5);
+	gluSphere(base, 1, 5,5);
+	glPopMatrix();
+
+	glPopMatrix();
+
+	glPopMatrix();
+
 }
 
 void fondo() {
@@ -582,11 +710,11 @@ void planeta(float distancia) {
 
 	float detras = 0;
 	float inicioPeriodo = (int)Z - (int)Z % (int)periodo;
-	float distanciaAnuncio =  (periodo / 4.f) -1;
-	if (inicioPeriodo + distanciaAnuncio < Z) { detras = 1; }
-	distanciaAnuncio += inicioPeriodo + (periodo * detras);
+	float distanciaPlaneta =  (periodo / 4.f) -1;
+	if (inicioPeriodo + distanciaPlaneta < Z) { detras = 1; }
+	distanciaPlaneta += inicioPeriodo + (periodo * detras);
 
-	float x = funcionCarretera(distanciaAnuncio);
+	float x = funcionCarretera(distanciaPlaneta);
 
 	glBindTexture(GL_TEXTURE_2D, textura[10]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -609,7 +737,7 @@ void planeta(float distancia) {
 	gluQuadricDrawStyle(sphere, GLU_FILL);
 	gluQuadricTexture(sphere, TRUE);
 	gluQuadricNormals(sphere, GLU_SMOOTH);
-	glTranslatef(x-10, -2, distanciaAnuncio );
+	glTranslatef(x-10, -2, distanciaPlaneta);
 	glScalef(3,3,3);
 	glRotatef((-anguloEstrella)/2, 0, 1, 0);
 	glRotatef(90, 1, 0, 0);
@@ -771,7 +899,7 @@ void generartexto() {
 
 	char* textAlambricoC;
 	string textAlambrico("Modo Alambrico:");
-	if (!modoSimple) textAlambrico.append(" ON");
+	if (modoSimple) textAlambrico.append(" ON");
 	else textAlambrico.append(" OFF");
 	textAlambricoC = &textAlambrico[0];
 
@@ -964,12 +1092,12 @@ void display()
 	fondo();
 	circuito();
 	planeta(1.f);
-	
+	panelflechas();
 	
 	detalles(1, nQuads / 3.2);
 	estrella(1.f);
 	detalles(nQuads / 2, nQuads);
-	panelflechas(2.f);
+
 	luces();
 	
 	mostrarHUD();
@@ -1011,7 +1139,12 @@ void onTimer(int valor) {
 	tSegundos = timeinfo->tm_sec;
 	Z += sin(angulo * PI / 180) * velocidad * tiempo_transcurrido / 1000.0f;
 	X += cos(angulo * PI / 180) * velocidad * tiempo_transcurrido / 1000.0f;
+
+	// Control de animaciones para que sean 
+	// temporalmente coherente con la velocidad del procesador carga del sistema.
 	anguloEstrella += velocidadEstrella * tiempo_transcurrido / 1000.0f;
+	desplazamientoTextura += ratioAnimacion *tiempo_transcurrido / 1000.0f;
+	movimientoPanel += amplitudAnimacion * tiempo_transcurrido / 1000.0f;
 
 	stringstream titulo;
 	titulo << fixed;
@@ -1023,6 +1156,8 @@ void onTimer(int valor) {
 	glutTimerFunc(1000 / tasaFPS, onTimer, tasaFPS);
 	glutPostRedisplay();
 }
+
+
 void reset() {
 	modoVista = 1;
 	noche = 0;
