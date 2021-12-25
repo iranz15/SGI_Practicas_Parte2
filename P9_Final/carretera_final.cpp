@@ -78,12 +78,14 @@ static int sonido = 1;
 static int dibujaEjes = 0;
 
 //Lista de variables de textura
-GLuint textura[16];
+GLuint textura[17];
 
 //Lista de variables de textura
 int totalcanciones = 2;
 static int idcancionActual = 0;
 static float auxVolumen = 0.f;
+
+//
 
 
 /*		Vista de pajaro
@@ -173,18 +175,22 @@ void texturas() {
 	glBindTexture(GL_TEXTURE_2D, textura[4]);
 	loadImageFile((char*)"./texturas/agujero_fondo.jpg");
 
+	//Fondo 3
 	glGenTextures(1, &textura[5]);
 	glBindTexture(GL_TEXTURE_2D, textura[5]);
 	loadImageFile((char*)"./texturas/estrellas_fondo.png");
 
+	//Fondo 4
 	glGenTextures(1, &textura[6]);
 	glBindTexture(GL_TEXTURE_2D, textura[6]);
 	loadImageFile((char*)"./texturas/luna_fondo_2.jpg");
 
+	//Textura Poste Anuncio
 	glGenTextures(1, &textura[7]);
 	glBindTexture(GL_TEXTURE_2D, textura[7]);
 	loadImageFile((char*)"./texturas/postes.png");
 
+	//Textura Estrella
 	glGenTextures(1, &textura[8]);
 	glBindTexture(GL_TEXTURE_2D, textura[8]);
 	loadImageFile((char*)"./texturas/rainbow_road_circle_star.png");
@@ -217,6 +223,10 @@ void texturas() {
 	glGenTextures(1, &textura[15]);
 	glBindTexture(GL_TEXTURE_2D, textura[15]);
 	loadImageFile((char*)"./texturas/poste_flechas.jpg");
+
+	glGenTextures(1, &textura[16]);
+	glBindTexture(GL_TEXTURE_2D, textura[16]);
+	loadImageFile((char*)"./texturas/textura_constelaciones.png");
 }
 
 
@@ -663,8 +673,8 @@ void fondo() {
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, cD);
 		glMaterialfv(GL_FRONT, GL_SPECULAR, cS);
 		if(cielo == 4){
-		GLfloat cE[] = { 0.1,0.1,0.1,1.0 };
-		glMaterialfv(GL_FRONT, GL_EMISSION, cE);
+			GLfloat cE[] = { 0.1,0.1,0.1,1.0 };
+			glMaterialfv(GL_FRONT, GL_EMISSION, cE);
 		}
 	}
 	float nquads = 10;
@@ -699,9 +709,40 @@ void fondo() {
 	}
 	glPopMatrix();
 
+
 	
 }
 
+
+void fondoModoAguila() {
+
+	//Dibuja un fondo adicional si esta modo aguila
+	
+		glPushMatrix();
+		if (noche) {
+			GLfloat cD[] = { 0.0,0.0,0.0,1.0 };
+			GLfloat cS[] = { 0.0,0.0,0.0,1.0 };
+			GLfloat s = 3.0;
+			glMaterialfv(GL_FRONT, GL_DIFFUSE, cD);
+			glMaterialfv(GL_FRONT, GL_SPECULAR, cS);
+			glMaterialf(GL_FRONT, GL_SHININESS, s);
+		}
+		GLfloat fondoBase0[3] = { -1,0,-1 };
+		GLfloat fondoBase1[3] = { -1,0,1 };
+		GLfloat fondoBase2[3] = { 1,0,1 };
+		GLfloat fondoBase3[3] = { 1,0,-1 };
+		glBindTexture(GL_TEXTURE_2D, textura[cielo]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+		glTranslatef(X, -100, Z);
+		glRotatef(135, 0, 1, 00);
+		glScalef(100, 1, 100);
+		quadtex(fondoBase0, fondoBase1, fondoBase2, fondoBase3, 0, 1, 0, 1, 1, 1);
+		glPopMatrix();
+	
+}
 void planeta(float distancia) {
 
 	glPushMatrix();
@@ -909,7 +950,7 @@ void generartexto() {
 	else textMusica.append(" OFF");
 	textMusicaC = &textMusica[0];
 
-	//char textAlambrico[] = "Alambrico: ON";
+	
 
 	texto(0, 5, ayuda, color, GLUT_BITMAP_9_BY_15, false);
 	texto(0, 18, separador, color, GLUT_BITMAP_9_BY_15,false);
@@ -977,7 +1018,6 @@ void mostrarHUD() {
 	// Z-Buffer Readonly
 	glDepthMask(GL_FALSE);
 	
-	// Control Velocidad
 	glPushMatrix();
 
 	if (velocidad <= 10) glColor4f(0, 1, 0.3, 0.7);
@@ -994,6 +1034,47 @@ void mostrarHUD() {
 
 	glEnd();
 	glPopMatrix();
+
+
+	//Flecha Vector Velocidad
+	GLuint id = glGenLists(1);
+	glNewList(id, GL_COMPILE);
+	//Brazo de la flecha
+	glBegin(GL_LINES);
+	glVertex3f(0, 0, 0);
+	glVertex3f(0, 1, 0);
+	glEnd();
+	//Punta de la flecha
+	glPushMatrix();
+	glTranslatef(0, 1, 0);
+	glRotatef(-90, 1, 0, 0);
+	glTranslatef(0.0, 0.0, -1 / 10.0);
+	glutSolidCone(1 / 50.0, 1 / 10.0, 10, 1);
+	glPopMatrix();
+	glEndList();
+
+	//Ahora construye los ejes
+	glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_TEXTURE_2D);
+	//Eje Z en azul
+	glColor4f(1.0,0.0,0.0,0.6);
+	glPushMatrix();
+	glRotatef(90, 0, 0, 1);
+	glCallList(id);
+	glPopMatrix();
+	//Esferita en el origen
+	glPopAttrib();
+	//Limpieza
+	glDeleteLists(id, 1);
+
+
+
+
+
+
+
+
 
 	// Z-Buffer a estado normal
 	glDepthMask(GL_TRUE);
@@ -1086,20 +1167,21 @@ void display()
 		ejes();
 		glPopMatrix();
 	}
+
+	
 	ambiente();
 	anuncio(2.f); //El anuncio se genera a mitad de ampitud de onda
 	circuito();
 	fondo();
+	if (!modoVista) fondoModoAguila();
 	circuito();
 	planeta(1.f);
 	panelflechas();
-	
 	detalles(1, nQuads / 3.2);
 	estrella(1.f);
 	detalles(nQuads / 2, nQuads);
-
-	luces();
 	
+	luces();
 	mostrarHUD();
 	generartexto();
 	
@@ -1143,7 +1225,7 @@ void onTimer(int valor) {
 	// Control de animaciones para que sean 
 	// temporalmente coherente con la velocidad del procesador carga del sistema.
 	anguloEstrella += velocidadEstrella * tiempo_transcurrido / 1000.0f;
-	desplazamientoTextura += ratioAnimacion *tiempo_transcurrido / 1000.0f;
+	desplazamientoTextura += ratioAnimacion * tiempo_transcurrido / 1000.0f;
 	movimientoPanel += amplitudAnimacion * tiempo_transcurrido / 1000.0f;
 
 	stringstream titulo;
@@ -1238,6 +1320,11 @@ void onKey(unsigned char tecla, int x, int y) {
 		saveScreenshot((char*)"captura_carretera_1.jpg", 900, 900);
 		engine->play2D("./sonidos/sonido_camara.mp3");
 		break;
+
+	case 'X':
+	case 'x':
+		engine->play2D("./sonidos/claxon.mp3");
+		break;
 	
 	case 27:
 		exit(0);
@@ -1257,7 +1344,7 @@ void onSpecialKey(int specialKey, int x, int y) {
 		velocidad += 0.1;
 		break;
 	case GLUT_KEY_DOWN:
-		if (velocidad <= 0.1) //Para evitar 
+		if (velocidad <= 0.1) //Para evitar negativos
 			velocidad = 0;
 		else velocidad -= 0.1;
 		break;
