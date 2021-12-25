@@ -15,6 +15,7 @@
 #include <freeglut.h>
 #include <Utilidades.h>
 #include <irrKlang.h>
+#include <vector>
 
 #pragma comment(lib, "irrKlang.lib")
 
@@ -78,15 +79,24 @@ static int sonido = 1;
 static int dibujaEjes = 0;
 
 //Lista de variables de textura
-GLuint textura[17];
+GLuint textura[18];
 
 //Lista de variables de textura
 int totalcanciones = 2;
 static int idcancionActual = 0;
 static float auxVolumen = 0.f;
 
-//
 
+//
+vector<std::string> faces
+{
+	"./texturas/tierra_right.png",
+		"./texturas/tierra_left.png",
+		"./texturas/tierra_top.png",
+		"./texturas/tierra_bottom.png",
+		"./texturas/tierra_front.png",
+		"./texturas/tierra_back.png"
+};
 
 /*		Vista de pajaro
 		  Carretera
@@ -149,6 +159,40 @@ void quadtexAlter(GLfloat v0[3], GLfloat v1[3], GLfloat v2[3], GLfloat v3[3],
 }
 
 
+void cargadorCubeMap(vector<std::string> faces)
+{
+
+	glGenTextures(1, &textura[16]);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textura[16]);
+	//loadImageFile((char*)"./texturas/tierra_cubemap.png");
+
+	for (unsigned int i = 0; i < faces.size(); i++)
+	{
+		// Detección del formato, lectura y conversion a BGRA
+		FREE_IMAGE_FORMAT formato = FreeImage_GetFileType(faces[i].c_str(), 0);
+		FIBITMAP* imagen = FreeImage_Load(formato, faces[i].c_str());
+		if (imagen == NULL) cerr << "Fallo carga de imagen " << faces[i].c_str() << endl;
+		FIBITMAP* imagen32b = FreeImage_ConvertTo32Bits(imagen);
+
+		// Lectura de dimensiones y colores
+		int w = FreeImage_GetWidth(imagen32b);
+		int h = FreeImage_GetHeight(imagen32b);
+		GLubyte* texeles = FreeImage_GetBits(imagen32b);
+
+		// Carga como textura actual
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, w, h, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, texeles);
+	
+		// Liberar recursos
+		FreeImage_Unload(imagen);
+		FreeImage_Unload(imagen32b);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+}
+
 
 
 
@@ -199,7 +243,6 @@ void texturas() {
 	glBindTexture(GL_TEXTURE_2D, textura[9]);
 	loadImageFile((char*)"./texturas/borde_carretera.png");
 
-
 	glGenTextures(1, &textura[10]);
 	glBindTexture(GL_TEXTURE_2D, textura[10]);
 	loadImageFile((char*)"./texturas/textura_jupiter.png");
@@ -224,9 +267,12 @@ void texturas() {
 	glBindTexture(GL_TEXTURE_2D, textura[15]);
 	loadImageFile((char*)"./texturas/poste_flechas.jpg");
 
-	glGenTextures(1, &textura[16]);
-	glBindTexture(GL_TEXTURE_2D, textura[16]);
-	loadImageFile((char*)"./texturas/textura_constelaciones.png");
+	/* 
+	glGenTextures(1, &textura[17]);
+	glBindTexture(GL_TEXTURE_2D, textura[17]);
+	loadImageFile((char*)"./texturas/tierra_cubemap.png");
+	*/
+	cargadorCubeMap(faces);
 }
 
 
@@ -978,9 +1024,7 @@ void mostrarHUD() {
 	
 	//Esfera
 	glPushMatrix();
-	glBindTexture(GL_TEXTURE_2D, textura[1]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textura[14]);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glTranslatef(-0.8, 0.8, 0.0);
 	GLUquadricObj* test = gluNewQuadric();
