@@ -6,7 +6,7 @@
  */
 
 
-#define PROYECTO "Practica P9 Conduccion - Creado por Jorge Iranzo Sanchez"
+#define PROYECTO "P9 Conduccion || Creado por Jorge Iranzo Sanchez"
  //#define _USE_MATH_DEFINES
 #include <iostream>		
 #include <sstream>
@@ -47,7 +47,7 @@ static int distancia = 1;
 static float threshold = 10;
 
 //Variables de control de camara
-float ratioGiro = 2;
+float ratioGiro = 0.5;
 static float angulo = 90.0; //IMPORTANTE: Se genera la carretera hacia el eje +Z . Inicialmente desde 0.0.0 la tangente forma 90 grados con +X.
 static float velocidad = 0.0;
 static int mirar = 1;		//Constante para controlar la distancia entre la camara y el punto que esta mirando. Se ha escogido de forma arbitraria
@@ -86,17 +86,6 @@ int totalcanciones = 2;
 static int idcancionActual = 0;
 static float auxVolumen = 0.f;
 
-
-//
-vector<std::string> faces
-{
-	"./texturas/tierra_right.png",
-		"./texturas/tierra_left.png",
-		"./texturas/tierra_top.png",
-		"./texturas/tierra_bottom.png",
-		"./texturas/tierra_front.png",
-		"./texturas/tierra_back.png"
-};
 
 /*		Vista de pajaro
 		  Carretera
@@ -157,44 +146,6 @@ void quadtexAlter(GLfloat v0[3], GLfloat v1[3], GLfloat v2[3], GLfloat v3[3],
 		glEnd();
 	}
 }
-
-
-void cargadorCubeMap(vector<std::string> faces)
-{
-
-	glGenTextures(1, &textura[16]);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, textura[16]);
-	//loadImageFile((char*)"./texturas/tierra_cubemap.png");
-
-	for (unsigned int i = 0; i < faces.size(); i++)
-	{
-		// Detección del formato, lectura y conversion a BGRA
-		FREE_IMAGE_FORMAT formato = FreeImage_GetFileType(faces[i].c_str(), 0);
-		FIBITMAP* imagen = FreeImage_Load(formato, faces[i].c_str());
-		if (imagen == NULL) cerr << "Fallo carga de imagen " << faces[i].c_str() << endl;
-		FIBITMAP* imagen32b = FreeImage_ConvertTo32Bits(imagen);
-
-		// Lectura de dimensiones y colores
-		int w = FreeImage_GetWidth(imagen32b);
-		int h = FreeImage_GetHeight(imagen32b);
-		GLubyte* texeles = FreeImage_GetBits(imagen32b);
-
-		// Carga como textura actual
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, w, h, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, texeles);
-	
-		// Liberar recursos
-		FreeImage_Unload(imagen);
-		FreeImage_Unload(imagen32b);
-	}
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-}
-
-
-
 
 void texturas() {
 
@@ -266,13 +217,15 @@ void texturas() {
 	glGenTextures(1, &textura[15]);
 	glBindTexture(GL_TEXTURE_2D, textura[15]);
 	loadImageFile((char*)"./texturas/poste_flechas.jpg");
-
-	/* 
+	
+	glGenTextures(1, &textura[16]);
+	glBindTexture(GL_TEXTURE_2D, textura[16]);
+	loadImageFile((char*)"./texturas/orbe_hud.png");
+	
 	glGenTextures(1, &textura[17]);
 	glBindTexture(GL_TEXTURE_2D, textura[17]);
-	loadImageFile((char*)"./texturas/tierra_cubemap.png");
-	*/
-	cargadorCubeMap(faces);
+	loadImageFile((char*)"./texturas/indicador_norte.png");
+
 }
 
 
@@ -1022,20 +975,7 @@ void mostrarHUD() {
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	
-	//Esfera
-	glPushMatrix();
-	glBindTexture(GL_TEXTURE_CUBE_MAP, textura[14]);
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	glTranslatef(-0.8, 0.8, 0.0);
-	GLUquadricObj* test = gluNewQuadric();
-	gluQuadricDrawStyle(test, GLU_FILL);
-	gluQuadricTexture(test, TRUE);
-	gluQuadricNormals(test, GLU_SMOOTH);
-	glRotatef(anguloEstrella, 0, 1, 0);
-	//glColor4f(0.0, 0.0, 0.0, 1.0);
-	gluSphere(test, 0.2, 20, 20);
-	glPopMatrix();
-
+	//Titulo
 	glPushMatrix();
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1047,7 +987,62 @@ void mostrarHUD() {
 	GLfloat v1[3] = { 1.0, 0.85, 0.0 };
 	GLfloat v2[3] = { 1.0, 1.0, 0.0 };
 	GLfloat v3[3] = { 0.2, 1.0, 0.0 };
-	quadtex( v0, v1, v2, v3, 0, 1, 0, 1, 0, 0);
+	quadtex(v0, v1, v2, v3, 0, 1, 0, 1, 0, 0);
+	glDisable(GL_BLEND);
+	glPopMatrix();
+
+
+
+	//Esfera cosntelaciones
+	glPushMatrix();
+	glBindTexture(GL_TEXTURE_2D, textura[16]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	glTranslatef(-0.8, 0.8, 0.0);
+	GLUquadricObj* test = gluNewQuadric();
+	gluQuadricDrawStyle(test, GLU_FILL);
+	gluQuadricTexture(test, TRUE);
+	gluQuadricNormals(test, GLU_SMOOTH);
+	glRotatef(anguloEstrella, 0, 1, 0);
+	glRotatef(90, -1, 0, 0);
+	//glColor4f(0.0, 0.0, 0.0, 1.0);
+	gluSphere(test, 0.2, 20, 20);
+	glPopMatrix();
+
+	//Indicador Norte
+	glPushMatrix();
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBindTexture(GL_TEXTURE_2D, textura[17]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	GLfloat n0[3] = { -0.2, 0.5, 0.0 };
+	GLfloat n1[3] = { 0.2, 0.5, 0.0 };
+	GLfloat n2[3] = { 0.2, 1, 0.0 };
+	GLfloat n3[3] = { -0.2, 1, 0.0 };
+	int Giro;
+	glTranslatef(-0.3, 0.8, 0.0);
+	glScalef(0.2, 0.2, 1);
+	if (angulo > 90.f) {
+		Giro = angulo - 90.f;
+		glRotatef(Giro, 0, 0, 1);
+	}
+	else if (angulo < 90.f) {
+		Giro = 90.f - angulo;
+		glRotatef(Giro, 0, 0, -1);
+	}
+	glBegin(GL_QUADS);
+	glTexCoord2f(0, 0);
+	glVertex3f(-1, -1, 0);
+	glTexCoord2f(1, 0);
+	glVertex3f(1, -1, 0);
+	glTexCoord2f(1, 1);
+	glVertex3f(1, 1, 0);
+	glTexCoord2f(0, 1);
+	glVertex3f(-1, 1, 0);
+	glEnd();
 	glDisable(GL_BLEND);
 	glPopMatrix();
 
@@ -1064,61 +1059,20 @@ void mostrarHUD() {
 	
 	glPushMatrix();
 
-	if (velocidad <= 10) glColor4f(0, 1, 0.3, 0.7);
-	if (velocidad > 10 && velocidad < 20) glColor4f(1, 1, 0.0, 0.7);
-	if (velocidad >= 20 ) glColor4f(1, 0.0, 0.0, 0.7);
+	if (velocidad <= 5) glColor4f(0, 1, 0.3, 0.5);
+	if (velocidad > 5 && velocidad < 10) glColor4f(1, 1, 0.0, 0.5);
+	if (velocidad >= 10 ) glColor4f(1, 0.0, 0.0, 0.5);
 
-	float aux = -1 + (velocidad / 30);
+	float aux = -1 + (velocidad / 10);
 	if (aux > 0.8) aux = 0.8;
 	glBegin(GL_POLYGON);
-	glVertex2f(0.90, aux);
-	glVertex2f(0.90, -1.00);
+	glVertex2f(0.85, aux);
+	glVertex2f(0.85, -1.00);
 	glVertex2f(1.00, -1.00);
 	glVertex2f(1.00, aux);
 
 	glEnd();
 	glPopMatrix();
-
-
-	//Flecha Vector Velocidad
-	GLuint id = glGenLists(1);
-	glNewList(id, GL_COMPILE);
-	//Brazo de la flecha
-	glBegin(GL_LINES);
-	glVertex3f(0, 0, 0);
-	glVertex3f(0, 1, 0);
-	glEnd();
-	//Punta de la flecha
-	glPushMatrix();
-	glTranslatef(0, 1, 0);
-	glRotatef(-90, 1, 0, 0);
-	glTranslatef(0.0, 0.0, -1 / 10.0);
-	glutSolidCone(1 / 50.0, 1 / 10.0, 10, 1);
-	glPopMatrix();
-	glEndList();
-
-	//Ahora construye los ejes
-	glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_2D);
-	//Eje Z en azul
-	glColor4f(1.0,0.0,0.0,0.6);
-	glPushMatrix();
-	glRotatef(90, 0, 0, 1);
-	glCallList(id);
-	glPopMatrix();
-	//Esferita en el origen
-	glPopAttrib();
-	//Limpieza
-	glDeleteLists(id, 1);
-
-
-
-
-
-
-
-
 
 	// Z-Buffer a estado normal
 	glDepthMask(GL_TRUE);
@@ -1275,7 +1229,7 @@ void onTimer(int valor) {
 	stringstream titulo;
 	titulo << fixed;
 	titulo.precision(1); // De esta forma no aparecen errores de coma flotante en la ventana
-	titulo << velocidad << "m/s";
+	titulo << velocidad << "m/s || o-----------------------o || " << PROYECTO <<" ||";
 	glutSetWindowTitle(titulo.str().c_str());
 	glutSetWindowTitle(titulo.str().c_str());
 	
@@ -1294,6 +1248,7 @@ void reset() {
 	cielo = 3;
 	sonido = 1;
 	idcancionActual = totalcanciones - 1;
+	dibujaEjes = 0;
 	cambiarMusica();
 }
 void onKey(unsigned char tecla, int x, int y) {
@@ -1367,7 +1322,9 @@ void onKey(unsigned char tecla, int x, int y) {
 
 	case 'X':
 	case 'x':
+		if (sonido){
 		engine->play2D("./sonidos/claxon.mp3");
+		}
 		break;
 	
 	case 27:
@@ -1393,10 +1350,12 @@ void onSpecialKey(int specialKey, int x, int y) {
 		else velocidad -= 0.1;
 		break;
 	case GLUT_KEY_LEFT:
-		angulo -= ratioGiro;
+		if (angulo <= 0.f) angulo = 0;
+		else angulo -= ratioGiro;
 		break;
 	case GLUT_KEY_RIGHT:
-		angulo += ratioGiro;
+		if (angulo >= 180.f) angulo = 180;
+		else angulo += ratioGiro;
 		break;
 	}
 	}
