@@ -87,16 +87,8 @@ static int idcancionActual = 0;
 static float auxVolumen = 0.f;
 
 
-/*		Vista de pajaro
-		  Carretera
-				^ Z+
-			   (|
-				|)
-			   (|
-X+    <---------|-------->     -X
 
 
-*/
 
 /* A partir del metodo descrito en Utilidades.h, esta implementacion de quadtex no tiene el calculo de normales. 
    Asi si a estos quads se le aplica luz, se aplicara a FRONT y BACK.
@@ -259,7 +251,7 @@ void init()
 	std::cout << "S/s: Activa/desactiva un modelo simple en alambrico sin luces ni texturas\nSi esta activo N/n se puede visualizar la resolucion adicional de los poligonos para conseguir luces mas realistas \n";
 	std::cout << "L/l: Cambia entre modo diurno/nocturno \n";
 	std::cout << "N/n: Cambia el estado de la niebla (on/off). Varia si L/l esta activado \n";
-	std::cout << "C/c: Cambia la visibilidad de elementos solidarios a la cámara -HUD-. El HUD contiene informacion acerca de \nla velocidad actual, el norte (eje -Z) y otros modos implementados \n";
+	std::cout << "C/c: Cambia la visibilidad de elementos solidarios a la camara -HUD-. El HUD contiene informacion acerca de \nla velocidad actual, el norte (eje -Z) y otros modos implementados \n";
 	std::cout << "---------------------\n";
 	std::cout << "MEJORAS/CONTROLES AVANZADOS:\n";
 	std::cout << "T/t: Activa/desactiva mensajes de ayuda que indican que modos estan activos. ( Se ha considerado que estos mensajes no forman del HUD,\npor lo que C/c no afecta a este opcion ) \n";
@@ -270,6 +262,7 @@ void init()
 	std::cout << "R/r: Reseta y pone los valores predeterminados de los modos descritos previamente (visual y sonoro) \n";
 	std::cout << "E/e: Dibuja/Desdibuja unos ejes en (0,0,0) \n";
 	std::cout << "J/j: Guarda una captura del estado actual del programa en el directorio donde esta el .exe \n";
+	std::cout << "X/X: Hace sonar un claxon \n";
 
 }
 

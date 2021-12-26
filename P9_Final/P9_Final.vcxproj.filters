@@ -37,4 +37,9 @@
       <Filter>Archivos de origen</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="informacionAdicionales.txt">
+      <Filter>Archivos de origen</Filter>
+    </Text>
+  </ItemGroup>
 </Project>
