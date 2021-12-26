@@ -81,8 +81,8 @@ static int dibujaEjes = 0;
 //Lista de variables de textura
 GLuint textura[18];
 
-//Lista de variables de textura
-int totalcanciones = 2;
+//Lista de variables de canciones/sonido
+int totalcanciones = 4;
 static int idcancionActual = 0;
 static float auxVolumen = 0.f;
 
@@ -190,38 +190,47 @@ void texturas() {
 	glBindTexture(GL_TEXTURE_2D, textura[8]);
 	loadImageFile((char*)"./texturas/rainbow_road_circle_star.png");
 
+	//Textura bordes de la carretera
 	glGenTextures(1, &textura[9]);
 	glBindTexture(GL_TEXTURE_2D, textura[9]);
 	loadImageFile((char*)"./texturas/borde_carretera.png");
 
+	//Textura Jupiter
 	glGenTextures(1, &textura[10]);
 	glBindTexture(GL_TEXTURE_2D, textura[10]);
 	loadImageFile((char*)"./texturas/textura_jupiter.png");
 
+	//Textura panel flecha luces
 	glGenTextures(1, &textura[11]);
 	glBindTexture(GL_TEXTURE_2D, textura[11]);
 	loadImageFile((char*)"./texturas/flechas_textura.png");
-
+	
+	//Logo HUD
 	glGenTextures(1, &textura[12]);
 	glBindTexture(GL_TEXTURE_2D, textura[12]);
 	loadImageFile((char*)"./texturas/logo_textura.png");
 
+	//Base de la estructura de final de bordes de carretera
 	glGenTextures(1, &textura[13]);
 	glBindTexture(GL_TEXTURE_2D, textura[13]);
 	loadImageFile((char*)"./texturas/detalles_borde_final.png");
 
+	//Parte superior de la estructura de final de bordes de carretera
 	glGenTextures(1, &textura[14]);
 	glBindTexture(GL_TEXTURE_2D, textura[14]);
 	loadImageFile((char*)"./texturas/detalles_borde_final_esfera.png");
 
+	//Textura metalica del poste flechas
 	glGenTextures(1, &textura[15]);
 	glBindTexture(GL_TEXTURE_2D, textura[15]);
 	loadImageFile((char*)"./texturas/poste_flechas.jpg");
-	
+
+	//Textura del orbe del HUD
 	glGenTextures(1, &textura[16]);
 	glBindTexture(GL_TEXTURE_2D, textura[16]);
 	loadImageFile((char*)"./texturas/orbe_hud.png");
 	
+	//Textura del indicador del HUD /Flecha del HUD
 	glGenTextures(1, &textura[17]);
 	glBindTexture(GL_TEXTURE_2D, textura[17]);
 	loadImageFile((char*)"./texturas/indicador_norte.png");
@@ -270,13 +279,11 @@ float funcionCarretera(float punto) {
 
 }
 
-
 float normal(float d) {
 
 	return  1 / (sqrtf(1 + powf(d, 2)));
 
 }
-
 
 float derivada(float punto,float amplitud) {
 
@@ -329,7 +336,8 @@ void anuncio(float distancia) {
 		glDisable(GL_LIGHT6);
 	}
 
-	quadtex(a3, a0, a1, a2, 0, 1, 0, 1, 10, 10);
+	if (noche) quadtex(a3, a0, a1, a2, 0, 1, 0, 1, 10, 10);
+	else quadtex(a3, a0, a1, a2, 0, 1, 0, 1, 1, 1);
 
 	//Dibujamos los postes
 	GLUquadric* poste = gluNewQuadric();
@@ -390,9 +398,7 @@ void circuito() {
 		GLfloat v3[3] = { x + (n * l) , 0.0 , punto + (-1 * d * n * l) };
 
 		GLfloat v1[3] = { x1 - (n1 * l), 0.0 , siguiente - (-1 * d1 * n1 * l) };
-		GLfloat v2[3] = { x1 + (n1 * l) , 0.0 , siguiente + (-1 * d1 * n1 * l) };
-
-		
+		GLfloat v2[3] = { x1 + (n1 * l) , 0.0 , siguiente + (-1 * d1 * n1 * l) };	
 		
 		glBindTexture(GL_TEXTURE_2D, textura[1]);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -405,9 +411,7 @@ void circuito() {
 		else { 
 			if (punto <= Z+7) { quadtex(v0, v1, v2, v3, 0, -1, 0, -1, 30, 110); }
 			else { quadtex(v0, v1, v2, v3, 0, -1, 0, -1, 2, 2); }
-		}
-		
-		
+		}		
 	}
 	glPopMatrix();
 }
@@ -450,8 +454,6 @@ void estrella(float distancia) {
 	glRotatef(anguloEstrella, 0, 0, -1);
 	if (noche) gluDisk(estrCirc, 2.0, 6, 20, 8);
 	else gluDisk(estrCirc, 2.0, 6, 14, 1);
-
-
 
 	glDisable(GL_BLEND);
 	glPopMatrix();
@@ -518,66 +520,56 @@ void detalles( int inicial,int final ) {
 		glPopMatrix();
 
 		//Retoques de principio y final de carretera
-
-		if (i == inicial || i == final) {
+		if (i == inicial || i == final) {		
 			
-			
-		glBindTexture(GL_TEXTURE_2D, textura[13]);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+			glBindTexture(GL_TEXTURE_2D, textura[13]);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+			else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-		//Detalles final recorrido borde izquierda
-		glPushMatrix();
+			//Detalles final recorrido borde izquierda
+			glPushMatrix();
 		
-		if (i == inicial) glTranslatef(v3[0] , 0, v3[2]);
-		else glTranslatef(v2[0], 0, v2[2]);
-		glRotatef(90, -1, 0, 0);
-		gluCylinder(detallesFinales, 0.05, 0.05, altura, 5, 1);
-		glPopMatrix();
+			if (i == inicial) glTranslatef(v3[0] , 0, v3[2]);
+			else glTranslatef(v2[0], 0, v2[2]);
+			glRotatef(90, -1, 0, 0);
+			gluCylinder(detallesFinales, 0.05, 0.05, altura, 5, 1);
+			glPopMatrix();
 
-		//Detalles final recorrido borde derecha
-		glPushMatrix();
-		if (i == inicial) glTranslatef(v0[0], 0, v0[2]);
-		else glTranslatef(v1[0], 0, v1[2]);
-		glRotatef(90, -1, 0, 0);
-		gluCylinder(detallesFinales, 0.05, 0.05, altura, 5, 1);
-		glPopMatrix();
-
+			//Detalles final recorrido borde derecha
+			glPushMatrix();
+			if (i == inicial) glTranslatef(v0[0], 0, v0[2]);
+			else glTranslatef(v1[0], 0, v1[2]);
+			glRotatef(90, -1, 0, 0);
+			gluCylinder(detallesFinales, 0.05, 0.05, altura, 5, 1);
+			glPopMatrix();
 		
-		glBindTexture(GL_TEXTURE_2D, textura[14]);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+			glBindTexture(GL_TEXTURE_2D, textura[14]);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+			else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-		//Detalles final recorrido borde izquierda Bola
-		glPushMatrix();
-		if (i == inicial) glTranslatef(v3[0], altura, v3[2]);
-		else glTranslatef(v2[0], altura, v2[2]);
-		//glRotatef(90, -1, 0, 0);
-		gluSphere(detallesfinalesEsfera, 0.1, 5, 5);
-		glPopMatrix();
+			//Detalles final recorrido borde izquierda Bola
+			glPushMatrix();
+			if (i == inicial) glTranslatef(v3[0], altura, v3[2]);
+			else glTranslatef(v2[0], altura, v2[2]);
+			//glRotatef(90, -1, 0, 0);
+			gluSphere(detallesfinalesEsfera, 0.1, 5, 5);
+			glPopMatrix();
 
-		//Detalles final recorrido borde derecha Bola
-		glPushMatrix();
-		if (i == inicial) glTranslatef(v0[0], altura, v0[2]);
-		else glTranslatef(v1[0], altura, v1[2]);
-		//glRotatef(90,-1, 0,0);
-		gluSphere(detallesfinalesEsfera, 0.1, 5, 5);
-		glPopMatrix();
-
-
-
-		}
-	
-	
+			//Detalles final recorrido borde derecha Bola
+			glPushMatrix();
+			if (i == inicial) glTranslatef(v0[0], altura, v0[2]);
+			else glTranslatef(v1[0], altura, v1[2]);
+			//glRotatef(90,-1, 0,0);
+			gluSphere(detallesfinalesEsfera, 0.1, 5, 5);
+			glPopMatrix();
+		}		
 	}
 	glDisable(GL_BLEND);
 }
-
-
 
 void panelflechas() {
 	
@@ -600,12 +592,9 @@ void panelflechas() {
 	float offsetZ = 3.f; 
 	float altura = 2.f;
 	GLfloat v0[3] = { x - (n * l) , 0.0 , punto - (-1 * d * n * l)  };
-	GLfloat v1[3] = { x1 - (n1 * l) + offsetX  , 0.0 , siguiente - (-1 * d1 * n1 * l) + offsetZ };
-		
-
+	GLfloat v1[3] = { x1 - (n1 * l) + offsetX  , 0.0 , siguiente - (-1 * d1 * n1 * l) + offsetZ };		
 	GLfloat v0YBorde[3] = { v0[0], altura , v0[2] };
 	GLfloat v1YBorde[3] = { v1[0], altura , v1[2] };
-
 
 	glPushMatrix(); 
 	//Animamos la estructura del panel para que parezca flotar
@@ -619,10 +608,8 @@ void panelflechas() {
 	glPushMatrix();
 	glTranslatef(-4, 2, 0);
 	//Movemos la textura del panel para que parezca estar encendido
-	if (noche) quadtexAlter(v0, v1, v1YBorde, v0YBorde, 0.f + desplazamientoTextura, -1.f + desplazamientoTextura, 0, -1, 20, 20);
-	else quadtexAlter(v0, v1, v1YBorde, v0YBorde, 0.f + desplazamientoTextura, -1.f + desplazamientoTextura, 0, -1, 2, 2);
+	quadtex(v0, v1, v1YBorde, v0YBorde, 0.f + desplazamientoTextura, -1.f + desplazamientoTextura, 0, -1, 2, 2);
 	glPopMatrix();
-
 
 	glPushMatrix();
 	glBindTexture(GL_TEXTURE_2D, textura[15]);
@@ -707,42 +694,38 @@ void fondo() {
 			cil3[j] = cil2[j];
 		}
 	}
-	glPopMatrix();
-
-
-	
+	glPopMatrix();	
 }
 
 
 void fondoModoAguila() {
 
-	//Dibuja un fondo adicional si esta modo aguila
-	
-		glPushMatrix();
-		if (noche) {
-			GLfloat cD[] = { 0.0,0.0,0.0,1.0 };
-			GLfloat cS[] = { 0.0,0.0,0.0,1.0 };
-			GLfloat s = 3.0;
-			glMaterialfv(GL_FRONT, GL_DIFFUSE, cD);
-			glMaterialfv(GL_FRONT, GL_SPECULAR, cS);
-			glMaterialf(GL_FRONT, GL_SHININESS, s);
-		}
-		GLfloat fondoBase0[3] = { -1,0,-1 };
-		GLfloat fondoBase1[3] = { -1,0,1 };
-		GLfloat fondoBase2[3] = { 1,0,1 };
-		GLfloat fondoBase3[3] = { 1,0,-1 };
-		glBindTexture(GL_TEXTURE_2D, textura[cielo]);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-		glTranslatef(X, -100, Z);
-		glRotatef(135, 0, 1, 00);
-		glScalef(100, 1, 100);
-		quadtex(fondoBase0, fondoBase1, fondoBase2, fondoBase3, 0, 1, 0, 1, 1, 1);
-		glPopMatrix();
-	
+	//Dibuja un fondo adicional si esta modo aguila	
+	glPushMatrix();
+	if (noche) {
+		GLfloat cD[] = { 0.0,0.0,0.0,1.0 };
+		GLfloat cS[] = { 0.0,0.0,0.0,1.0 };
+		GLfloat s = 3.0;
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, cD);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, cS);
+		glMaterialf(GL_FRONT, GL_SHININESS, s);
+	}
+	GLfloat fondoBase0[3] = { -1,0,-1 };
+	GLfloat fondoBase1[3] = { -1,0,1 };
+	GLfloat fondoBase2[3] = { 1,0,1 };
+	GLfloat fondoBase3[3] = { 1,0,-1 };
+	glBindTexture(GL_TEXTURE_2D, textura[cielo]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	if (noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	glTranslatef(X, -100, Z);
+	glRotatef(135, 0, 1, 00);
+	glScalef(100, 1, 100);
+	quadtex(fondoBase0, fondoBase1, fondoBase2, fondoBase3, 0, 1, 0, 1, 1, 1);
+	glPopMatrix();	
 }
+
 void planeta(float distancia) {
 
 	glPushMatrix();
@@ -786,15 +769,13 @@ void planeta(float distancia) {
 	glDisable(GL_TEXTURE_GEN_S);
 	glDisable(GL_TEXTURE_GEN_T);
 	glPopMatrix();
-
-
 }
 
 void luzfoco() {
 
 	if (noche ) {
 		if(modoVista){
-		//glPushMatrix();
+		
 		GLfloat focoP[] = { 0, 0.7, 0, 1.0 };
 		GLfloat focoA[] = { 0.2, 0.2, 0.2, 1.0 };
 		GLfloat focoD[] = { 1.00, 1.00, 1.00, 1.0 };
@@ -809,14 +790,12 @@ void luzfoco() {
 
 		glLightfv(GL_LIGHT1, GL_POSITION, focoP);
 		glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, focoM);
-		//glLightf(GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.1);   //Atenuacuion para que la luz no ilumine el fondo
 
 		glEnable(GL_LIGHT1);
 		glEnable(GL_LIGHTING);
-		//glPopMatrix();
-		}
-		else { glDisable(GL_LIGHT1); }
 		
+		}
+		else { glDisable(GL_LIGHT1); }	
 	}
 	else {
 		glDisable(GL_LIGHTING);
@@ -826,7 +805,6 @@ void luzfoco() {
 
 
 void luces() {
-
 
 	if (noche) {
 
@@ -867,42 +845,33 @@ void luces() {
 			glEnable(GL_LIGHTi);
 
 		}
-
 		glEnable(GL_LIGHTING);
-
 	}
 	else {
-
 		glDisable(GL_LIGHT0);
 		for (int i = 2; i <= 5; i++) {
 			GLenum GL_LIGHTi = GL_LIGHT0 + i;
 			glDisable(GL_LIGHTi);
 		}
 		glDisable(GL_LIGHTING);
-
 	}
 }
 
-
 void ambiente() {
 	glPushMatrix();
-	if (niebla && !noche) {
-		
+	if (niebla && !noche) {	
 		glEnable(GL_FOG);
 		GLfloat nieblaD[] = { 0.6875, 0.8046875, 0.9765625, 1.0 };
 		glFogfv(GL_FOG_COLOR, nieblaD);
 		glFogf(GL_FOG_DENSITY, 0.25);
 	}
 	else if (niebla && noche) {
-	
 		glEnable(GL_FOG);
 		GLfloat nieblaN[] = { 0.0, 0.0, 0.02, 1.0 };
 		glFogfv(GL_FOG_COLOR, nieblaN);
 		glFogf(GL_FOG_DENSITY, 0.15);
-	
 	}
-	else { glDisable(GL_FOG);
-	}
+	else { glDisable(GL_FOG); }
 	glPopMatrix();
 }
 
@@ -950,7 +919,10 @@ void generartexto() {
 	else textMusica.append(" OFF");
 	textMusicaC = &textMusica[0];
 
-	
+	char* textCancionC;
+	string textCancion("ID Cancion Actual: ");
+	textCancion.append(to_string(idcancionActual));
+	textCancionC = &textCancion[0];
 
 	texto(0, 5, ayuda, color, GLUT_BITMAP_9_BY_15, false);
 	texto(0, 18, separador, color, GLUT_BITMAP_9_BY_15,false);
@@ -958,8 +930,9 @@ void generartexto() {
 	texto(0, 40, textHudC, color, GLUT_BITMAP_9_BY_15, false);
 	texto(0, 52, textNieblaC, color, GLUT_BITMAP_9_BY_15, false);
 	texto(0, 64, textVistaC, color, GLUT_BITMAP_9_BY_15, false);
-	texto(0, 76, textMusicaC, color, GLUT_BITMAP_9_BY_15, false);
-	texto(0, 88, textAlambricoC, color, GLUT_BITMAP_9_BY_15, false);
+	texto(0, 76, textAlambricoC, color, GLUT_BITMAP_9_BY_15, false);
+	texto(0, 88, textMusicaC, color, GLUT_BITMAP_9_BY_15, false);
+	texto(0, 100, textCancionC, color, GLUT_BITMAP_9_BY_15, false);
 	}
 }
 void mostrarHUD() {
@@ -992,9 +965,7 @@ void mostrarHUD() {
 	glDisable(GL_BLEND);
 	glPopMatrix();
 
-
-
-	//Esfera cosntelaciones
+	//Esfera constelaciones
 	glPushMatrix();
 	glBindTexture(GL_TEXTURE_2D, textura[16]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -1047,7 +1018,6 @@ void mostrarHUD() {
 	glDisable(GL_BLEND);
 	glPopMatrix();
 
-
 	//Contador velocidad
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_DEPTH_TEST);
@@ -1060,7 +1030,7 @@ void mostrarHUD() {
 	
 	glPushMatrix();
 
-	if (velocidad <= 5) glColor4f(0, 1, 0.3, 0.5);
+	if (velocidad <= 5) glColor4f(0, 0.6, 0.0, 0.5);
 	if (velocidad > 5 && velocidad < 10) glColor4f(1, 1, 0.0, 0.5);
 	if (velocidad >= 10 ) glColor4f(1, 0.0, 0.0, 0.5);
 
@@ -1087,13 +1057,10 @@ void mostrarHUD() {
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-	
-	}
-	
-
-	
+	glPopMatrix();	
+	}		
 }
+
 void activarMusica() {
 
 	if(sonido) {
@@ -1105,10 +1072,8 @@ void activarMusica() {
 	}
 	else if (!sonido) {
 		sonido = 1;
-		cancionfondo->setVolume(auxVolumen);
-		
+		cancionfondo->setVolume(auxVolumen);	
 	}
-
 }
 
 void cambiarMusica() {
@@ -1127,10 +1092,17 @@ void cambiarMusica() {
 				cancionfondo = engine->play2D("./sonidos/Kirby_Water_Song_Air_Ride_01.mp3", true, false, true);
 				cancionfondo->setVolume(0.5);
 				break;
-			}
-		
-		}
+			case 2:
+				cancionfondo = engine->play2D("./sonidos/Darkmoon_Caverns _DKR_02.mp3", true, false, true);
+				cancionfondo->setVolume(0.5);
+				break;
+			case 3:
+				cancionfondo = engine->play2D("./sonidos/Terraria_Space_03.mp3", true, false, true);
+				cancionfondo->setVolume(0.5);
+				break;
 
+			}
+	}
 }
 
 void display()
@@ -1185,8 +1157,6 @@ void display()
 	generartexto();
 	
 	glutSwapBuffers();
-
-
 }
 
 void reshape(GLint w, GLint h)
@@ -1198,7 +1168,6 @@ void reshape(GLint w, GLint h)
 	gluPerspective(45, razon, 1, 300);
 
 }
-
 
 
 #pragma warning(disable : 4996)
@@ -1320,19 +1289,15 @@ void onKey(unsigned char tecla, int x, int y) {
 		saveScreenshot((char*)"captura_carretera_1.jpg", 900, 900);
 		engine->play2D("./sonidos/sonido_camara.mp3");
 		break;
-
 	case 'X':
 	case 'x':
 		if (sonido){
 		engine->play2D("./sonidos/claxon.mp3");
 		}
 		break;
-	
 	case 27:
 		exit(0);
-
-	}
-
+		}
 	glutPostRedisplay();
 }
 
@@ -1372,7 +1337,6 @@ void main(int argc, char** argv) {
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(900, 900);
 	glutInitWindowPosition(100, 100);
-
 	glutCreateWindow(PROYECTO);
 	init();
 	glutDisplayFunc(display);
