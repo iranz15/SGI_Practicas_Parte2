@@ -619,7 +619,8 @@ void panelflechas() {
 	glPushMatrix();
 	glTranslatef(-4, 2, 0);
 	//Movemos la textura del panel para que parezca estar encendido
-	quadtexAlter(v0, v1, v1YBorde, v0YBorde, 0.f + desplazamientoTextura, -1.f + desplazamientoTextura, 0, -1 , 2, 2);
+	if (noche) quadtexAlter(v0, v1, v1YBorde, v0YBorde, 0.f + desplazamientoTextura, -1.f + desplazamientoTextura, 0, -1, 20, 20);
+	else quadtexAlter(v0, v1, v1YBorde, v0YBorde, 0.f + desplazamientoTextura, -1.f + desplazamientoTextura, 0, -1, 2, 2);
 	glPopMatrix();
 
 
