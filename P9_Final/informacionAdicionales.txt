@@ -1,14 +1,17 @@
 	|////////////////////////////////////////////|
-	|INFORMACIÓN ADICIONAL ACERCA DE LA PRACTICA |
+	|INFORMACIÓN ADICIONAL ACERCA DE LA PRÁCTICA |
 	|						9					 |
-	|	***	Creado por Jorge Iranzo Sanchez	***	 |
+	|     ***Creado por Jorge Iranzo Sánchez***  |
 	|	   o----------------=--------------o	 |
+	|	    Esta documentación y proyecto		 |
+	|			han sido generados en			 |
+	|			 Visual Studio 2019 			 |
 	|////////////////////////////////////////////|
 
 	Se ha implementado una carretera de generación
 					DINÁMICA
 
-				  Vista de pajaro
+				  Vista de pájaro
 					Carretera
 						^ Z+
 					   (|
@@ -21,45 +24,45 @@
 
 
 	|////////////////////////////////////////////|
-	|	   ARCHIVOS INCLUIDOS EN LA ENTREGA	     |
+	|	   ARCHIVOS INCLUIDOS EN LA ENTREGA      |
 	|////////////////////////////////////////////|
 
 	- El archivo principal de codigo carretera_final.cpp 
 	- El ejecutable P9_Final.exe
 	- La carpeta texturas que incluye todas las texturas utilizadas en el proyecto*
-	- La carpeta sonidos que incluye todas las texturas utilizadas en el proyecto*
-	- La imagen captura_carretera_base qu emuestrea de forma panoramica la carretera y como se genera de forma dinamica.
+	- La carpeta sonidos que incluye todos los sonidos utilizados en el proyecto*
+	- La imagen captura_carretera_base que muestra de forma panorámica la carretera y cómo se genera de forma dinámica.
 	- Los archivos .dll irrKlang.dll y ikpMP3.dll ( VER HERRAMIENTAS ADICIONALES UTILIZADAS	)
 
 	*IMPORTANTE: Debido a que carretera_final.cpp busca que las texturas y los sonidos
-	esten dentro de estos directorios no tienen que sacarse de estos
-	y han de estar en el mismo directorio que el .exe .
+	estén dentro de estos directorios no tienen que sacarse de estos
+	y han de estar en el mismo directorio que el .exe para que este funcione correctamente.
 
 
 	|////////////////////////////////////////////|
 	|    HERRAMIENTAS ADICIONALES UTILIZADAS     |
 	|////////////////////////////////////////////|
 
-	Se ha utilizado diferentes metodos del Utilidades.h y por lo tanto, FreeImage.lib.
+	Se han utilizado diferentes métodos del Utilidades.h y por lo tanto, FreeImage.lib.
 
-	Se ha utilizado la libreria irrKlang para la implementacion de sonidos en OpenGL.
+	Se ha utilizado la librería irrKlang para la implementación de sonidos en OpenGL.
 	Esta se puede obtener oficialmente desde https://www.ambiera.com/irrklang/downloads.html
-	y se ha utilizado la version 1.6 de 32 bits. 
+	y se ha utilizado la versión 1.6 de 32 bits. 
 
-	Para la compilacion se han colocado los headers, bin y lib dados por esta libreria 
-	y se ha vinculado correctamente en la carpeta codebase, no incluido en la entrega*.
+	Para la compilación se han colocado los headers, bin y lib dados por esta librería 
+	en la carpeta codebase (no incluida en la entrega) y se han vinculado correctamente.*
 
-	IMPORTANTE: Si que se ha incluido los archivos .dll irrKlang.dll y ikpMP3.dll,
-	ya que son necesarios que esten referenciados en el PATH de la maquina
-	para la ejecucion del .exe (o bien situados en el mismo directorio del .exe).
+	*IMPORTANTE: Sí que se han incluido los archivos .dll irrKlang.dll y ikpMP3.dll,
+	ya que son necesarios que estén referenciados en el PATH de la máquina
+	para la ejecución del .exe (o bien situados en el mismo directorio del .exe).
 
 
 	|////////////////////////////////////////////|
-	|   ACERCA DE LAS MEJORAS DE INTERACCION	 |
+	|   ACERCA DE LAS MEJORAS DE INTERACCIÓN	 |
 	|////////////////////////////////////////////|
 
 	Se habla brevemente de los controles en la ayuda por terminal del programa y por lo tanto,
-	de las mejoras de interaccion hechas. 
+	de las mejoras de interacción hechas. 
 	
 	La Transcripción de los controles es la siguiente:
 
@@ -71,10 +74,10 @@
 	L/l: Cambia entre modo diurno/nocturno
 	N/n: Cambia el estado de la niebla (on/off). Varia si L/l esta activado
 	C/c: Cambia la visibilidad de elementos solidarios a la camara -HUD-. El HUD contiene informacion acerca de
-	la velocidad actual, el norte (eje -Z) y otros modos implementados
+	la velocidad actual, el Norte (eje Z) y otros modos implementados
 	---------------------
 	MEJORAS/CONTROLES AVANZADOS:
-	T/t: Activa/desactiva mensajes de ayuda que indican que modos estan activos. ( Se ha considerado que estos mensajes no forman del HUD,
+	T/t: Activa/desactiva mensajes de ayuda que indican que modos estan activos. ( Se ha considerado que estos mensajes no forman parte del HUD,
 	por lo que C/c no afecta a este opcion )
 	V/v: Activa/desactiva una vista de aguila para ver el circuito desde arriba. Se desactiva el movimiento mediante flechas en este modo
 	W/w: Cambia la textura de fondo del cielo entre una seleccion de imagenes
@@ -88,13 +91,35 @@
 
 	|////////////////////////////////////////////|
 	|   ACERCA DE LA GEOMETRÍA UTILIZADA EN	     |
-	|		LA ESCENA, TEXTURAS, ANIMACION		 |
-	|					Y LUCES 				 |
+	|		LA ESCENA, TEXTURAS, ANIMACIÓN		 |
+	|					Y LUCES					 |
 	|////////////////////////////////////////////|
 
-	- Se han utilizado un total de 6 luces para el modo noche. 4 focales distribuidas equitativamente iluminando por el circuito, 1 solidario al
-	vehículo, 1 direccional de la luna y una 1 focal para ilumnar el anuncio que aparece a mitad de onda.
+	La estética del proyecto se ha basado en una reproducción del nivel Senda Arcoiris del juego Mario Kart.
 
-	- Aparte de la geometria basica de la entrega se ha añadido:
-
+	- Aparte de la geometria básica de la entrega se ha añadido:
+		[1] - Detalles a lo largo de los bordes de la carretera, junto una geometría que indica el inicio y final de estas secciones.			||	Uso de blending
+		[2] - Pilares cilíndricos al elemento anuncio para que sirvan de base.
+		[3] - La estructura panelflechas, donde se ha animado:
+				- Su textura para que haga el efecto de que está encendido, 
+				- Su movimiento para hacer el efecto que está levitando en el espacio.
+		[4] - La estructura estrella, que se mueve rotándose con el tiempo.																		||	Uso de blending
+		[4] - La estructura planeta, que se mueve rotándose con el tiempo.																		||	Uso de Generación automática de coordenadas de textura
+		[5] - En el HUD, un indicador de velocidad, una flecha que indica el Norte (Z), un logo y una figura esférica animada.						||	Uso de blending
+		      Se ha decidido que la iluminación y el resto de la escena no afecta al HUD*
+			 
  
+	- Se han utilizado un total de 7 luces para el modo noche. 4 focales distribuidas equitativamente iluminando por el circuito, 1 solidaria al
+	vehículo imitando el faro, 1 direccional de la luna y una 1 focal para iluminar el anuncio que aparece a mitad de onda.
+
+	*  Como se ha basado en un videojuego, tiene sentido que los elementos del HUD estén lo más visible posible para que el usuario puede extraer la información del HUD fácilmente.
+	
+	|////////////////////////////////////////////|
+	|											 |
+	|				EJECUCIÓN					 |
+	|											 |
+	|////////////////////////////////////////////|
+
+	Cualquier equipo con el codebase vinculado correctamente tal como se ha descrito en las clases de laboratorio
+	puede ejecutar el .exe sin problemas al descomprimir la carpeta.
+

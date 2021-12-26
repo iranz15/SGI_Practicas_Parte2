@@ -1,6 +1,6 @@
 /*!
-	\file		carretera_texturas.cpp
-	\brief		Practica 8 Iluminacion
+	\file		carretera_final.cpp
+	\brief		Practica 9 Videojuego de Conduccion
 	\author		Jorge Iranzo' <jorirsan@upv.es>
 	\date		2021-2022
  */
@@ -50,7 +50,7 @@ static float threshold = 10;
 float ratioGiro = 0.5;
 static float angulo = 90.0; //IMPORTANTE: Se genera la carretera hacia el eje +Z . Inicialmente desde 0.0.0 la tangente forma 90 grados con +X.
 static float velocidad = 0.0;
-static int mirar = 1;		//Constante para controlar la distancia entre la camara y el punto que esta mirando. Se ha escogido de forma arbitraria
+static int mirar = 1;		//Constante para controlar la distancia entre la camara y el punto que esta mirando. Se ha escogido de forma arbitraria a 1.
 
 //VARIABLES ANIMACION
 //Angulo de giro de la estructura estrella. 
@@ -85,8 +85,6 @@ GLuint textura[18];
 int totalcanciones = 4;
 static int idcancionActual = 0;
 static float auxVolumen = 0.f;
-
-
 
 
 
@@ -235,11 +233,17 @@ void init()
 	//Inicializacion de metodos que cargan lista para luego poder llamarlas en display o otros metodos
 	 // Fondo Blanco
 
-	glEnable(GL_DEPTH_TEST);		//Test de profundidad
-	glEnable(GL_NORMALIZE);			//Normalizacion vectores iluminacion
-	texturas();						//Carga todas las texturas. NO se puede poner en el display
-									//porque si no estaria cargando las texturas cada frame y va lentisimo
-	engine = createIrrKlangDevice();   //Creamos el controlador de sonido
+	glEnable(GL_DEPTH_TEST);				// Test de profundidad
+	glEnable(GL_NORMALIZE);					// Normalizacion vectores iluminacion
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  //* Necesario para que saveScreenshot funcione correctamente
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);	//* Esto se debe a que el guardado de pixeles de OpenGl puede ocasionar problemas si el ancho del viewport es multiple de 4.
+											//* y ocasiona una violación de acceso de escritura  https://community.khronos.org/t/error-with-glreadpixels/20480/3
+
+	texturas();								// Carga todas las texturas. NO se puede poner en el display
+											// porque si no estaria cargando las texturas cada frame.
+
+	engine = createIrrKlangDevice();		// Creamos el controlador de sonido
 	//Cancion Base
 	cancionfondo = engine->play2D("./sonidos/Rainbow_Road_DS_Song_00.mp3", true, false, true);
 	cancionfondo->setVolume(0.3);
@@ -251,10 +255,10 @@ void init()
 	std::cout << "S/s: Activa/desactiva un modelo simple en alambrico sin luces ni texturas\nSi esta activo N/n se puede visualizar la resolucion adicional de los poligonos para conseguir luces mas realistas \n";
 	std::cout << "L/l: Cambia entre modo diurno/nocturno \n";
 	std::cout << "N/n: Cambia el estado de la niebla (on/off). Varia si L/l esta activado \n";
-	std::cout << "C/c: Cambia la visibilidad de elementos solidarios a la camara -HUD-. El HUD contiene informacion acerca de \nla velocidad actual, el norte (eje -Z) y otros modos implementados \n";
+	std::cout << "C/c: Cambia la visibilidad de elementos solidarios a la camara -HUD-. El HUD contiene informacion acerca de \nla velocidad actual, el Norte (eje Z) y otros modos implementados \n";
 	std::cout << "---------------------\n";
 	std::cout << "MEJORAS/CONTROLES AVANZADOS:\n";
-	std::cout << "T/t: Activa/desactiva mensajes de ayuda que indican que modos estan activos. ( Se ha considerado que estos mensajes no forman del HUD,\npor lo que C/c no afecta a este opcion ) \n";
+	std::cout << "T/t: Activa/desactiva mensajes de ayuda que indican que modos estan activos. ( Se ha considerado que estos mensajes no forman parte del HUD,\npor lo que C/c no afecta a este opcion ) \n";
 	std::cout << "V/v: Activa/desactiva una vista de aguila para ver el circuito desde arriba. Se desactiva el movimiento mediante flechas en este modo \n";
 	std::cout << "W/w: Cambia la textura de fondo del cielo entre una seleccion de imagenes \n";
 	std::cout << "M/m: Activa/desactiva la musica y los sonidos \n";
@@ -263,6 +267,8 @@ void init()
 	std::cout << "E/e: Dibuja/Desdibuja unos ejes en (0,0,0) \n";
 	std::cout << "J/j: Guarda una captura del estado actual del programa en el directorio donde esta el .exe \n";
 	std::cout << "X/X: Hace sonar un claxon \n";
+	std::cout << "---------------------\n";
+	std::cout << "Para mas informacion, ver el .txt adjunto informacionAdicionales.txt \n";
 
 }
 
@@ -398,8 +404,7 @@ void circuito() {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		if(noche) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		else glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-		
-		//GL_MODULATE/ GL_REPLACE o se puede usar el canal alfa con GL_BLEND
+
 		if (!noche) { quadtex(v0, v1, v2, v3, 0, -1, 0, -1, 1, 1); }
 		else { 
 			if (punto <= Z+7) { quadtex(v0, v1, v2, v3, 0, -1, 0, -1, 30, 110); }
@@ -427,9 +432,7 @@ void estrella(float distancia) {
 	GLfloat a2[3] = { v3[0], 3, v3[2] };
 	GLfloat a3[3] = { v3[0], 2, v3[2] };
 
-	//Con quadtex ocurre que al pasar por la estrella, el hud desaparace durant un momento,
-	// por lo que se ha optado por una geometria que por el centro no halla espacio de dibujo
-	//quadtex(a3, a0, a1, a2, 0, 1, 0, 1, 10, 10); 
+	
 	glPushMatrix();
 	GLUquadric* estrCirc = gluNewQuadric();
 	gluQuadricTexture(estrCirc, GL_TRUE);
@@ -660,7 +663,7 @@ void fondo() {
 	float nquads = 10;
 	float alpha = 2 * PI / nquads;
 	float r = 100;
-	float x = r * cos(0); //0 porque en la priemra tiracion del bloque se incilizada en alpha * 1 = alpha (1)
+	float x = r * cos(0); //0 porque en la primera tiracion del bloque se incilizada en alpha * 1 = alpha (1)
 	float z = r * sin(0); //(0)
 	int altura = 200;
 	GLfloat cil0[3] = { x + X,-(altura / 2), z + Z };
@@ -823,7 +826,6 @@ void luces() {
 				 // Casting para poder sacar bien el inico del periodo
 			float distanciaFarolas = (periodo / 4.f) * ((float)i - 2.f);
 
-			//if (i == 5) { printf("%.6f\n", distanciaFarolas );  }
 			if (inicioPeriodo + distanciaFarolas < Z) { detras = 1; }			//Si detras de la camara, generamos en el siguiente periodo y no se genera detras
 			GLfloat lP[] = { funcionCarretera(inicioPeriodo + distanciaFarolas + (periodo * detras)), 4.0, inicioPeriodo + distanciaFarolas + (periodo * detras), 1.0 };
 			//Ambiental 0 por defecto
@@ -1141,11 +1143,44 @@ void display()
 	circuito();
 	planeta(1.f);
 	panelflechas();
+
+	/*
+	  Debido como he generado el circuito, se ha de tener en cuanto la visibilidad de elementos.
+		- En la escena puede haber secciones donde el borde izquierdo tapa el derecho, pero tambien hay secciones donde el derecho tapa al izquierdo.
+		- En la escena puede haber secciones donde la estrella tape  los bordes, pero tambien donde los bordes tapan la estrella.
+
+	------------------------------------------------------------------
+
+		 Para evitar dichos conflictos de visibilidad  se ha optado por
+		 partir en dos la generacion de los detalles de la carretera, 
+		 separandose si esta antes o despues de la estrella.
+	
+		 Si no se tuviese en cuenta, para el siguiente caso el resultado no seria el deseado:
+
+					  Vista de pajaro
+						Carretera
+							^ Z+
+						   ((
+							|))
+						  (4(
+						   [X]		<------------------ Elemento estrella
+							)3)
+						 (2(|		<------------------ La camara esta aqui, mirando hacia [4]
+							)1)
+			+X    <---------0-------->     -X
+							|
+							|
+							& -Z
+	*/
+
+	//Los elementos con blending se implementan despues de la creacion de todos los opacos
 	detalles(1, nQuads / 3.2);
 	estrella(1.f);
 	detalles(nQuads / 2, nQuads);
 	
 	luces();
+
+	//Se dibuja el HUD, que estara sobre
 	mostrarHUD();
 	generartexto();
 	
@@ -1279,7 +1314,9 @@ void onKey(unsigned char tecla, int x, int y) {
 		break;
 	case 'J':
 	case 'j':
-		saveScreenshot((char*)"captura_carretera_1.jpg", 900, 900);
+		GLint viewport[4];
+		glGetIntegerv(GL_VIEWPORT, viewport);
+		saveScreenshot((char*)"captura_carretera_1.jpg", viewport[2], viewport[3]);
 		engine->play2D("./sonidos/sonido_camara.mp3");
 		break;
 	case 'X':
